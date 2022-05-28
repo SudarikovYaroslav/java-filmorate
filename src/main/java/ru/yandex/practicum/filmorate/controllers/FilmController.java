@@ -67,4 +67,8 @@ public class FilmController {
             throw new InvalidFilmException("Продолжительность фильма должна быть положительной!");
         }
     }
+
+    public static long getMaxDescriptionLength() {
+        return MAX_DESCRIPTION_LENGTH;
+    }
 }
