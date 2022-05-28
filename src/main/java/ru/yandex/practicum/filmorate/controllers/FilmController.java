@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @RestController
+@RequestMapping("/films")
 @Slf4j
 public class FilmController {
     private static final long MAX_DESCRIPTION_LENGTH = 200L;
