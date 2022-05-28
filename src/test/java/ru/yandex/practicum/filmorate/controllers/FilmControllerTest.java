@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.adapters.LocalDateAdapter;
@@ -16,6 +15,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.Month;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -57,41 +57,100 @@ public class FilmControllerTest {
         HttpRequest nullNameRequest = HttpRequest.newBuilder().POST(nullNameBody).uri(URI).build();
         HttpRequest blankNameRequest = HttpRequest.newBuilder().POST(blankNameBody).uri(URI).build();
 
-        // этот кусочек просто для проверки работы GET запроса
-        HttpRequest getRequest = HttpRequest.newBuilder().GET().uri(URI).build();
-        HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
-        assertEquals(getResponse.statusCode(), STATUS_OK);
-        //
-        /*
         HttpResponse<String> validResponse = client.send(validNameRequest, HttpResponse.BodyHandlers.ofString());
         assertEquals(STATUS_OK, validResponse.statusCode());
 
-        assertThrows(InvalidFilmException.class,
+        InvalidFilmException exNullName = assertThrows(InvalidFilmException.class,
                 () -> {
                     client.send(nullNameRequest, HttpResponse.BodyHandlers.ofString());
                 }
         );
+        assertEquals("Название фильма не может быть пустым!", exNullName.getMessage());
 
-        assertThrows(InvalidFilmException.class,
+        InvalidFilmException exBlankName = assertThrows(InvalidFilmException.class,
                 () -> {
                     client.send(blankNameRequest, HttpResponse.BodyHandlers.ofString());
                 }
-        );*/
+        );
+        assertEquals("Название фильма не может быть пустым!", exBlankName.getMessage());
     }
 
     @Test
-    public void filmDescriptionValidationTest() {
+    public void filmDescriptionValidationTest() throws IOException, InterruptedException {
+        Film validDescriptionFilm = generateValidFilm();
+        Film tooLongDescriptionFilm = generateValidFilm();
+        tooLongDescriptionFilm.setDescription(generateTooLongDescription());
 
+        String validFilmJson = gson.toJson(validDescriptionFilm);
+        String invalidFilmJson = gson.toJson(tooLongDescriptionFilm);
+
+        HttpRequest.BodyPublisher validFilmBody = HttpRequest.BodyPublishers.ofString(validFilmJson);
+        HttpRequest.BodyPublisher invalidFilmBody = HttpRequest.BodyPublishers.ofString(invalidFilmJson);
+
+        HttpRequest validFilmRequest = HttpRequest.newBuilder().uri(URI).POST(validFilmBody).build();
+        HttpRequest invalidFilmRequest = HttpRequest.newBuilder().uri(URI).POST(invalidFilmBody).build();
+
+        HttpResponse<String> validFilmResponse = client.send(validFilmRequest, HttpResponse.BodyHandlers.ofString());
+        assertEquals(STATUS_OK, validFilmResponse.statusCode());
+
+        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+                    client.send(invalidFilmRequest, HttpResponse.BodyHandlers.ofString());
+                }
+        );
+
+        assertEquals("Максимальная длинна описания фильма: " + FilmController.getMaxDescriptionLength() +
+                " символов!", ex.getMessage());
     }
 
     @Test
-    public void releaseValidationTest() {
+    public void releaseValidationTest() throws IOException, InterruptedException {
+        Film validFilm = generateValidFilm();
+        Film invalidReleaseFilm = generateValidFilm();
+        invalidReleaseFilm.setReleaseDate(LocalDate.of(1895, Month.DECEMBER, 27));
 
+        String validFilmJson = gson.toJson(validFilm);
+        String invalidFilmJson = gson.toJson(invalidReleaseFilm);
+
+        HttpRequest.BodyPublisher validFilmBody = HttpRequest.BodyPublishers.ofString(validFilmJson);
+        HttpRequest.BodyPublisher invalidFilmBody = HttpRequest.BodyPublishers.ofString(invalidFilmJson);
+
+        HttpRequest validFilmRequest = HttpRequest.newBuilder().uri(URI).POST(validFilmBody).build();
+        HttpRequest invalidFilmRequest = HttpRequest.newBuilder().uri(URI).POST(invalidFilmBody).build();
+
+        HttpResponse<String> validResponse = client.send(validFilmRequest, HttpResponse.BodyHandlers.ofString());
+        assertEquals(STATUS_OK, validResponse.statusCode());
+
+        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+                client.send(invalidFilmRequest, HttpResponse.BodyHandlers.ofString());
+            }
+        );
+        assertEquals("Дата релиза не может быть раньше чем день рождения кино: "
+                + FilmController.getFirstFilmBirthday(), ex.getMessage());
     }
 
     @Test
-    public void durationValidationTest() {
+    public void durationValidationTest() throws IOException, InterruptedException {
+        Film validFilm = generateValidFilm();
+        Film negativeDurationFilm = generateValidFilm();
+        negativeDurationFilm.setDuration(Duration.ofHours(-1));
 
+        String validFilmJson = gson.toJson(validFilm);
+        String invalidFilmJson = gson.toJson(negativeDurationFilm);
+
+        HttpRequest.BodyPublisher validFilmBody = HttpRequest.BodyPublishers.ofString(validFilmJson);
+        HttpRequest.BodyPublisher invalidFilmBody =  HttpRequest.BodyPublishers.ofString(invalidFilmJson);
+
+        HttpRequest validFilmRequest = HttpRequest.newBuilder().uri(URI).POST(validFilmBody).build();
+        HttpRequest invalidFilmRequest = HttpRequest.newBuilder().uri(URI).POST(invalidFilmBody).build();
+
+        HttpResponse<String> validFilmResponse = client.send(validFilmRequest, HttpResponse.BodyHandlers.ofString());
+        assertEquals(STATUS_OK, validFilmResponse.statusCode());
+
+        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+                client.send(invalidFilmRequest, HttpResponse.BodyHandlers.ofString());
+            }
+        );
+        assertEquals("Продолжительность фильма должна быть положительной!", ex.getMessage());
     }
 
     private String generateTooLongDescription() {

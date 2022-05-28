@@ -13,26 +13,26 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 @Slf4j
-public class UserController {
+public class UserController extends Controller<User> {
 
     private final Map<String, User> users = new HashMap<>();
 
     @PostMapping
-    public void createUser(@RequestBody User user) throws InvalidUserException {
+    public void add(@RequestBody User user) throws InvalidUserException {
         validateUser(user);
         users.put(user.getEmail(), user);
         log.debug("Добавлен пользователь: " + user.getLogin() + " - email: " + user.getEmail());
     }
 
     @PutMapping
-    public void updateUser(@RequestBody User user) throws InvalidUserException {
+    public void update(@RequestBody User user) throws InvalidUserException {
         validateUser(user);
         users.put(user.getEmail(), user);
         log.debug("Обновлён пользователь: " + user.getLogin() + " - email: " + user.getEmail());
     }
 
     @GetMapping
-    public Collection<User> getUsers() {
+    public Collection<User> get() {
         log.debug("Текущее количество пользователей: " + users.size());
         return users.values();
     }

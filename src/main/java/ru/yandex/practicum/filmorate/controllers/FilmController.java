@@ -13,33 +13,33 @@ import java.util.Set;
 @RestController
 @RequestMapping("/films")
 @Slf4j
-public class FilmController {
+public class FilmController extends Controller<Film> {
     private static final long MAX_DESCRIPTION_LENGTH = 200L;
     private static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
     private final Set<Film> films = new HashSet<>();
 
     @PostMapping
-    public void addFilm(@RequestBody Film film) throws InvalidFilmException {
-        validateFilm(film);
+    public void add(@RequestBody Film film) throws InvalidFilmException {
+        validate(film);
         films.add(film);
         log.debug("Добавлен фильм: " + film.getName());
     }
 
     @PutMapping
-    public void updateFilm(@RequestBody Film film) throws InvalidFilmException {
-        validateFilm(film);
+    public void update(@RequestBody Film film) throws InvalidFilmException {
+        validate(film);
         films.add(film);
         log.debug("Обновлён фильм: " + film.getName());
     }
 
     @GetMapping
-    public Set<Film> getFilms() {
+    public Set<Film> get() {
         log.debug("Текущее количество фильмов: " + films.size());
         return films;
     }
 
-    private void validateFilm(Film film) throws InvalidFilmException {
+    private void validate(Film film) throws InvalidFilmException {
         if (film == null) {
             log.warn("Передано пустое значение фильма");
             throw new NullPointerException("Передано пустое значение фильма!");
@@ -70,5 +70,9 @@ public class FilmController {
 
     public static long getMaxDescriptionLength() {
         return MAX_DESCRIPTION_LENGTH;
+    }
+
+    public static LocalDate getFirstFilmBirthday() {
+        return FIRST_FILM_BIRTHDAY;
     }
 }
