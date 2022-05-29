@@ -43,7 +43,7 @@ public class FilmController extends Controller<Film> {
             throw new InvalidFilmException("Передано пустое значение фильма!");
         }
 
-        if (film.getId() == 0) {
+        if (film.getId() <= 0) {
             log.warn("У переданного фильма не установлен id");
             throw new InvalidFilmException("Фильму не установлен id!");
         }
