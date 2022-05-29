@@ -17,29 +17,28 @@ public class FilmController extends Controller<Film> {
     private static final long MAX_DESCRIPTION_LENGTH = 200L;
     private static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
-    private final Set<Film> films = new HashSet<>();
-
     @PostMapping
     public void add(@RequestBody Film film) throws InvalidFilmException {
         validate(film);
-        films.add(film);
+        data.add(film);
         log.debug("Добавлен фильм: " + film.getName());
     }
 
     @PutMapping
     public void update(@RequestBody Film film) throws InvalidFilmException {
         validate(film);
-        films.add(film);
+        data.add(film);
         log.debug("Обновлён фильм: " + film.getName());
     }
 
     @GetMapping
     public Set<Film> get() {
-        log.debug("Текущее количество фильмов: " + films.size());
-        return films;
+        log.debug("Текущее количество фильмов: " + data.size());
+        return data;
     }
 
-    private void validate(Film film) throws InvalidFilmException {
+    @Override
+    protected void validate(Film film) throws InvalidFilmException {
         if (film == null) {
             log.warn("Передано пустое значение фильма");
             throw new NullPointerException("Передано пустое значение фильма!");

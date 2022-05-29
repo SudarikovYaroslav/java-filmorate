@@ -9,35 +9,35 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
 public class UserController extends Controller<User> {
 
-    private final Map<String, User> users = new HashMap<>();
-
     @PostMapping
     public void add(@RequestBody User user) throws InvalidUserException {
-        validateUser(user);
-        users.put(user.getEmail(), user);
-        log.debug("Добавлен пользователь: " + user.getLogin() + " - email: " + user.getEmail());
+        validate(user);
+        data.add(user);
+        log.debug("Добавлен пользователь: " + user.getLogin());
     }
 
     @PutMapping
     public void update(@RequestBody User user) throws InvalidUserException {
-        validateUser(user);
-        users.put(user.getEmail(), user);
-        log.debug("Обновлён пользователь: " + user.getLogin() + " - email: " + user.getEmail());
+        validate(user);
+        data.add(user);
+        log.debug("Обновлён пользователь: " + user.getLogin());
     }
 
     @GetMapping
-    public Collection<User> get() {
-        log.debug("Текущее количество пользователей: " + users.size());
-        return users.values();
+    public Set<User> get() {
+        log.debug("Текущее количество пользователей: " + data.size());
+        return data;
     }
 
-    private void validateUser(User user) throws InvalidUserException {
+    @Override
+    protected void validate(User user) throws InvalidUserException {
         if (user == null) {
             log.warn("Передано пустое значение пользователя");
             throw new NullPointerException("Передано пустое значение пользователя!");
