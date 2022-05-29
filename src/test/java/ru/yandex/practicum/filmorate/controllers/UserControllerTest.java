@@ -4,19 +4,16 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
-
 import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UserControllerTest {
     private static final long ID = 1L;
     private static final String EMAIL = "user@mail.ru";
     private static final String LOGIN = "user";
     private static final String NAME = "Username";
-    private static final LocalDate BIRTHDAY = LocalDate.of(2000,1,1);
+    private static final LocalDate BIRTHDAY = LocalDate.of(2000, 1, 1);
 
     @Test
     public void addNullUserTest() {
@@ -31,6 +28,19 @@ public class UserControllerTest {
     }
 
     @Test
+    public void invalidIdUserTest() {
+        UserController userController = new UserController();
+
+        User invalidIdUser = generateValidUser();
+        invalidIdUser.setId(0);
+        InvalidUserException ex = assertThrows(InvalidUserException.class, () -> {
+                    userController.add(invalidIdUser);
+                }
+        );
+        assertEquals("Пользователю " + invalidIdUser.getName() + " не присвоен id!", ex.getMessage());
+    }
+
+    @Test
     public void emailValidationTest() throws InvalidUserException {
         UserController userController = new UserController();
         User validUser = generateValidUser();
@@ -42,8 +52,8 @@ public class UserControllerTest {
         User nullEmailUser = generateValidUser();
         nullEmailUser.setEmail(null);
         InvalidUserException exNullEmail = assertThrows(InvalidUserException.class, () -> {
-                userController.add(nullEmailUser);
-            }
+                    userController.add(nullEmailUser);
+                }
         );
         assertEquals(exReferenceMessage, exNullEmail.getMessage());
 
@@ -73,8 +83,8 @@ public class UserControllerTest {
         User nullLoginUser = generateValidUser();
         nullLoginUser.setLogin(null);
         InvalidUserException nullLoginUserEx = assertThrows(InvalidUserException.class, () -> {
-                userController.add(nullLoginUser);
-            }
+                    userController.add(nullLoginUser);
+                }
         );
         assertEquals(exReferenceMessage, nullLoginUserEx.getMessage());
 
@@ -118,8 +128,8 @@ public class UserControllerTest {
         userFromTheFuture.setBirthday(LocalDate.now().plusYears(1));
 
         InvalidUserException birthdayInFutureEx = assertThrows(InvalidUserException.class, () -> {
-                userController.add(userFromTheFuture);
-            }
+                    userController.add(userFromTheFuture);
+                }
         );
         assertEquals("Дата рождения не может быть в будущем!", birthdayInFutureEx.getMessage());
 

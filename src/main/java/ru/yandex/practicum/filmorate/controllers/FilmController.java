@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.HashSet;
 import java.util.Set;
 
 @RestController
@@ -44,14 +43,34 @@ public class FilmController extends Controller<Film> {
             throw new InvalidFilmException("Передано пустое значение фильма!");
         }
 
-        if (film.getName() == null || film.getName().isBlank()) {
-            log.warn("Передано пустое название фильма");
-            throw new InvalidFilmException("Название фильма не может быть пустым!");
+        if (film.getId() == 0) {
+            log.warn("У переданного фильма не установлен id");
+            throw new InvalidFilmException("Фильму не установлен id!");
+        }
+
+        if (film.getName() == null) {
+            log.warn("у переданного фильма не установлено название");
+            throw new InvalidFilmException("Фильму не установлено название!");
         }
 
         if (film.getDescription() == null) {
             log.warn("Передана недопустимая длинна описания фильма");
             throw new InvalidFilmException("Не указано описание фильма!");
+        }
+
+        if (film.getReleaseDate() == null) {
+            log.warn("Передана некорректная дата релиза фильма");
+            throw new InvalidFilmException("Не указана дата выхода фильма!");
+        }
+
+        if (film.getDuration() == null) {
+            log.warn("Передана некорректная продолжительность фильма");
+            throw new InvalidFilmException("Не указана продолжительность фильма!");
+        }
+
+        if (film.getName().isBlank()) {
+            log.warn("Передано пустое название фильма");
+            throw new InvalidFilmException("Название фильма не может быть пустым!");
         }
 
         if (film.getDescription().length() > MAX_DESCRIPTION_LENGTH) {
@@ -60,20 +79,10 @@ public class FilmController extends Controller<Film> {
                     "Максимальная длинна описания фильма: " + MAX_DESCRIPTION_LENGTH + " символов!");
         }
 
-        if (film.getReleaseDate() == null) {
-            log.warn("Передана некорректная дата релиза фильма");
-            throw new InvalidFilmException("Не указана дата выхода фильма!");
-        }
-
         if (film.getReleaseDate().isBefore(FIRST_FILM_BIRTHDAY)) {
             log.warn("Передана некорректная дата релиза фильма");
             throw new InvalidFilmException(
                     "Дата релиза не может быть раньше чем день рождения кино: " + FIRST_FILM_BIRTHDAY);
-        }
-
-        if (film.getDuration() == null) {
-            log.warn("Передана некорректная продолжительность фильма");
-            throw new InvalidFilmException("Не указана продолжительность фильма!");
         }
 
         if (film.getDuration().getSeconds() < 0) {

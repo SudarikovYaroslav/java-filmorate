@@ -9,9 +9,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class FilmControllerTest {
@@ -33,20 +31,32 @@ public class FilmControllerTest {
         Film nullNameFilm = generateValidFilm();
         nullNameFilm.setName(null);
         InvalidFilmException exNullName = assertThrows(InvalidFilmException.class, () -> {
-                filmController.add(nullNameFilm);
-            }
+                    filmController.add(nullNameFilm);
+                }
         );
-        assertEquals("Название фильма не может быть пустым!", exNullName.getMessage());
+        assertEquals("Фильму не установлено название!", exNullName.getMessage());
 
         Film blankNameFilm = generateValidFilm();
         blankNameFilm.setName("");
         InvalidFilmException exBlankName = assertThrows(InvalidFilmException.class, () -> {
-                filmController.add(blankNameFilm);
-            }
+                    filmController.add(blankNameFilm);
+                }
         );
         assertEquals("Название фильма не может быть пустым!", exBlankName.getMessage());
     }
 
+    @Test
+    public void filmIdInvalidTest() {
+        FilmController filmController = new FilmController();
+
+        Film invalidIdFilm = generateValidFilm();
+        invalidIdFilm.setId(0);
+        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+                    filmController.add(invalidIdFilm);
+                }
+        );
+        assertEquals("Фильму не установлен id!", ex.getMessage());
+    }
 
     @Test
     public void filmDescriptionValidationTest() throws InvalidFilmException {
@@ -56,8 +66,8 @@ public class FilmControllerTest {
         tooLongDescriptionFilm.setDescription(generateTooLongDescription());
 
         InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
-                filmController.add(tooLongDescriptionFilm);
-            }
+                    filmController.add(tooLongDescriptionFilm);
+                }
         );
         assertEquals("Максимальная длинна описания фильма: " + FilmController.getMaxDescriptionLength()
                 + " символов!", ex.getMessage());
@@ -80,8 +90,8 @@ public class FilmControllerTest {
         Film beforeEverFilm = generateValidFilm();
         beforeEverFilm.setReleaseDate(FilmController.getFirstFilmBirthday().minusDays(1));
         InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
-                filmController.add(beforeEverFilm);
-            }
+                    filmController.add(beforeEverFilm);
+                }
         );
         assertEquals("Дата релиза не может быть раньше чем день рождения кино: "
                 + FilmController.getFirstFilmBirthday(), ex.getMessage());
@@ -99,8 +109,8 @@ public class FilmControllerTest {
         Film negativeDurationFilm = generateValidFilm();
         negativeDurationFilm.setDuration(Duration.ofMillis(-1));
         InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
-                filmController.add(negativeDurationFilm);
-            }
+                    filmController.add(negativeDurationFilm);
+                }
         );
         assertEquals("Продолжительность фильма должна быть положительной!", ex.getMessage());
     }
@@ -111,8 +121,8 @@ public class FilmControllerTest {
         FilmController filmController = new FilmController();
 
         InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
-                filmController.add(film);
-            }
+                    filmController.add(film);
+                }
         );
         assertEquals("Передано пустое значение фильма!", ex.getMessage());
     }
@@ -142,6 +152,7 @@ public class FilmControllerTest {
         );
         assertEquals("Не указана дата выхода фильма!", ex.getMessage());
     }
+
     @Test
     public void addNullDurationFilmTest() {
         Film film = generateValidFilm();

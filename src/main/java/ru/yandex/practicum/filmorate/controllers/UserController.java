@@ -6,9 +6,6 @@ import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -41,6 +38,11 @@ public class UserController extends Controller<User> {
         if (user == null) {
             log.warn("Передано пустое значение пользователя");
             throw new InvalidUserException("Передано пустое значение пользователя!");
+        }
+
+        if (user.getId() <= 0) {
+            log.warn("Пользователю " + user.getName() + "  не присвоен id");
+            throw new InvalidUserException("Пользователю " + user.getName() + " не присвоен id!");
         }
 
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
