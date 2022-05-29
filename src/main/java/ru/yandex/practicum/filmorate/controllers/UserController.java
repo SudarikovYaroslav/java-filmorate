@@ -4,9 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.IdGenerator;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/users")
@@ -16,21 +17,21 @@ public class UserController extends Controller<User> {
     @PostMapping
     public void add(@RequestBody User user) throws InvalidUserException {
         validate(user);
-        data.add(user);
+        data.put(user.getId(), user);
         log.debug("Добавлен пользователь: " + user.getLogin());
     }
 
     @PutMapping
     public void update(@RequestBody User user) throws InvalidUserException {
         validate(user);
-        data.add(user);
+        data.put(user.getId(), user);
         log.debug("Обновлён пользователь: " + user.getLogin());
     }
 
     @GetMapping
-    public Set<User> get() {
+    public Collection<User> get() {
         log.debug("Текущее количество пользователей: " + data.size());
-        return data;
+        return data.values();
     }
 
     @Override
@@ -40,9 +41,9 @@ public class UserController extends Controller<User> {
             throw new InvalidUserException("Передано пустое значение пользователя!");
         }
 
-        if (user.getId() <= 0) {
-            log.warn("Пользователю " + user.getName() + "  не присвоен id");
-            throw new InvalidUserException("Пользователю " + user.getName() + " не присвоен id!");
+        if (user.getId() == null) {
+            user.setId(IdGenerator.generateId());
+            log.warn("Пользователю " + user.getName() + " присвоен id=" + user.getId());
         }
 
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {

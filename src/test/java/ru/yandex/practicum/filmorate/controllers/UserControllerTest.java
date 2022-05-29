@@ -28,16 +28,13 @@ public class UserControllerTest {
     }
 
     @Test
-    public void invalidIdUserTest() {
+    public void invalidIdUserTest() throws InvalidUserException {
         UserController userController = new UserController();
 
         User invalidIdUser = generateValidUser();
-        invalidIdUser.setId(0);
-        InvalidUserException ex = assertThrows(InvalidUserException.class, () -> {
-                    userController.add(invalidIdUser);
-                }
-        );
-        assertEquals("Пользователю " + invalidIdUser.getName() + " не присвоен id!", ex.getMessage());
+        invalidIdUser.setId(null);
+        userController.add(invalidIdUser);
+        assertNotEquals(0, userController.get().size());
     }
 
     @Test

@@ -4,10 +4,11 @@ import lombok.Builder;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Builder
 public class Film {
-    private long id;
+    private Long id;
     private String name;
     private String description;
     private LocalDate releaseDate;
@@ -21,11 +22,11 @@ public class Film {
         this.duration = duration;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -59,5 +60,18 @@ public class Film {
 
     public void setDuration(Duration duration) {
         this.duration = duration;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Film film = (Film) o;
+        return Objects.equals(id, film.id) && Objects.equals(name, film.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
     }
 }

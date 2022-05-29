@@ -4,10 +4,11 @@ import lombok.Builder;
 
 import javax.validation.constraints.Email;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Builder
 public class User {
-    private long id;
+    private Long id;
 
     @Email
     private String email;
@@ -23,11 +24,11 @@ public class User {
         this.birthday = birthday;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -61,5 +62,18 @@ public class User {
 
     public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id && Objects.equals(email, user.email) && Objects.equals(login, user.login);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, email, login);
     }
 }

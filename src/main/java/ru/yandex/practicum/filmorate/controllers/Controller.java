@@ -1,12 +1,10 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public abstract class Controller<T> {
 
-    protected Set<T> data = new HashSet<>();
+    protected Map<Long,T> data = new HashMap<>();
 
     abstract public void add(T t) throws Exception;
 

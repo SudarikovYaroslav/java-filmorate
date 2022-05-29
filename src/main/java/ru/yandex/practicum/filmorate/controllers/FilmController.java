@@ -4,10 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.IdGenerator;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Set;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/films")
@@ -19,21 +20,21 @@ public class FilmController extends Controller<Film> {
     @PostMapping
     public void add(@RequestBody Film film) throws InvalidFilmException {
         validate(film);
-        data.add(film);
+        data.put(film.getId(),film);
         log.debug("Добавлен фильм: " + film.getName());
     }
 
     @PutMapping
     public void update(@RequestBody Film film) throws InvalidFilmException {
         validate(film);
-        data.add(film);
+        data.put(film.getId(), film);
         log.debug("Обновлён фильм: " + film.getName());
     }
 
     @GetMapping
-    public Set<Film> get() {
+    public Collection<Film> get() {
         log.debug("Текущее количество фильмов: " + data.size());
-        return data;
+        return data.values();
     }
 
     @Override
@@ -43,9 +44,9 @@ public class FilmController extends Controller<Film> {
             throw new InvalidFilmException("Передано пустое значение фильма!");
         }
 
-        if (film.getId() <= 0) {
-            log.warn("У переданного фильма не установлен id");
-            throw new InvalidFilmException("Фильму не установлен id!");
+        if (film.getId() == null) {
+            film.setId(IdGenerator.generateId());
+            log.warn("У переданного фильма не установлен id, присвоен id=" + film.getId());
         }
 
         if (film.getName() == null) {

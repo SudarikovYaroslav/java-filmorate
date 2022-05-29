@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.IdGenerator;
 
 import java.net.URI;
 import java.time.Duration;
@@ -13,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class FilmControllerTest {
-    private static final long ID = 1L;
     private static final String NAME = "Test film name";
     private static final String DESCRIPTION = "Test description";
     private static final LocalDate RELEASE_DATE = LocalDate.of(2000, 1, 1);
@@ -46,16 +46,13 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void filmIdInvalidTest() {
+    public void filmIdInvalidTest() throws InvalidFilmException {
         FilmController filmController = new FilmController();
 
         Film invalidIdFilm = generateValidFilm();
-        invalidIdFilm.setId(0);
-        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
-                    filmController.add(invalidIdFilm);
-                }
-        );
-        assertEquals("Фильму не установлен id!", ex.getMessage());
+        invalidIdFilm.setId(null);
+        filmController.add(invalidIdFilm);
+        assertNotEquals(0, filmController.get().size());
     }
 
     @Test
@@ -191,7 +188,7 @@ public class FilmControllerTest {
 
     private Film generateValidFilm() {
         return Film.builder()
-                .id(ID)
+                .id(IdGenerator.generateId())
                 .name(NAME)
                 .description(DESCRIPTION)
                 .releaseDate(RELEASE_DATE)
