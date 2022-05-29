@@ -41,7 +41,7 @@ public class FilmController extends Controller<Film> {
     protected void validate(Film film) throws InvalidFilmException {
         if (film == null) {
             log.warn("Передано пустое значение фильма");
-            throw new NullPointerException("Передано пустое значение фильма!");
+            throw new InvalidFilmException("Передано пустое значение фильма!");
         }
 
         if (film.getName() == null || film.getName().isBlank()) {
@@ -49,20 +49,35 @@ public class FilmController extends Controller<Film> {
             throw new InvalidFilmException("Название фильма не может быть пустым!");
         }
 
-        if (film.getDescription() != null && film.getDescription().length() > MAX_DESCRIPTION_LENGTH) {
+        if (film.getDescription() == null) {
+            log.warn("Передана недопустимая длинна описания фильма");
+            throw new InvalidFilmException("Не указано описание фильма!");
+        }
+
+        if (film.getDescription().length() > MAX_DESCRIPTION_LENGTH) {
             log.warn("Передана недопустимая длинна описания фильма");
             throw new InvalidFilmException(
                     "Максимальная длинна описания фильма: " + MAX_DESCRIPTION_LENGTH + " символов!");
         }
 
-        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(FIRST_FILM_BIRTHDAY)) {
+        if (film.getReleaseDate() == null) {
+            log.warn("Передана некорректная дата релиза фильма");
+            throw new InvalidFilmException("Не указана дата выхода фильма!");
+        }
+
+        if (film.getReleaseDate().isBefore(FIRST_FILM_BIRTHDAY)) {
             log.warn("Передана некорректная дата релиза фильма");
             throw new InvalidFilmException(
                     "Дата релиза не может быть раньше чем день рождения кино: " + FIRST_FILM_BIRTHDAY);
         }
 
-        if (film.getDuration() != null && film.getDuration().getSeconds() < 0) {
-            log.warn("Передана отрицательная продолжительность фильма");
+        if (film.getDuration() == null) {
+            log.warn("Передана некорректная продолжительность фильма");
+            throw new InvalidFilmException("Не указана продолжительность фильма!");
+        }
+
+        if (film.getDuration().getSeconds() < 0) {
+            log.warn("Передана некорректная продолжительность фильма");
             throw new InvalidFilmException("Продолжительность фильма должна быть положительной!");
         }
     }

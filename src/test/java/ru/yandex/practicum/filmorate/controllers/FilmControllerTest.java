@@ -105,6 +105,57 @@ public class FilmControllerTest {
         assertEquals("Продолжительность фильма должна быть положительной!", ex.getMessage());
     }
 
+    @Test
+    public void addNullFilm() {
+        Film film = null;
+        FilmController filmController = new FilmController();
+
+        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+                filmController.add(film);
+            }
+        );
+        assertEquals("Передано пустое значение фильма!", ex.getMessage());
+    }
+
+    @Test
+    public void addNullDescriptionFilm() {
+        Film film = generateValidFilm();
+        film.setDescription(null);
+        FilmController filmController = new FilmController();
+
+        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+                    filmController.add(film);
+                }
+        );
+        assertEquals("Не указано описание фильма!", ex.getMessage());
+    }
+
+    @Test
+    public void addNullReleaseFilm() {
+        Film film = generateValidFilm();
+        film.setReleaseDate(null);
+        FilmController filmController = new FilmController();
+
+        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+                    filmController.add(film);
+                }
+        );
+        assertEquals("Не указана дата выхода фильма!", ex.getMessage());
+    }
+    @Test
+    public void addNullDurationFilm() {
+        Film film = generateValidFilm();
+        film.setDuration(null);
+        FilmController filmController = new FilmController();
+
+        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+                    filmController.add(film);
+                }
+        );
+        assertEquals("Не указана продолжительность фильма!", ex.getMessage());
+    }
+
+
     /**
      * Метод генерирует описание к фильму длинной на 1 символ больше максимально допустимой
      */
@@ -116,6 +167,7 @@ public class FilmControllerTest {
         }
         return resultBuilder.toString();
     }
+
 
     private String generateMaxLengthDescription() {
         StringBuilder resultBuilder = new StringBuilder();
