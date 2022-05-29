@@ -40,7 +40,7 @@ public class UserController extends Controller<User> {
     protected void validate(User user) throws InvalidUserException {
         if (user == null) {
             log.warn("Передано пустое значение пользователя");
-            throw new NullPointerException("Передано пустое значение пользователя!");
+            throw new InvalidUserException("Передано пустое значение пользователя!");
         }
 
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
@@ -58,9 +58,13 @@ public class UserController extends Controller<User> {
             user.setName(user.getLogin());
         }
 
-        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
+        if (user.getBirthday() == null) {
+            throw new InvalidUserException("Не указана дата рождения пользователя!");
+        }
+
+        if (user.getBirthday().isAfter(LocalDate.now())) {
             log.warn("Передана некорректная дата рождения");
-            throw new InvalidUserException("Дата рождения не может быть в будущем");
+            throw new InvalidUserException("Дата рождения не может быть в будущем!");
         }
     }
 }

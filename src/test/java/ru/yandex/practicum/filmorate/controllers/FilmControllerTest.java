@@ -106,7 +106,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void addNullFilm() {
+    public void addNullFilmTest() {
         Film film = null;
         FilmController filmController = new FilmController();
 
@@ -118,7 +118,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void addNullDescriptionFilm() {
+    public void addNullDescriptionFilmTest() {
         Film film = generateValidFilm();
         film.setDescription(null);
         FilmController filmController = new FilmController();
@@ -131,7 +131,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void addNullReleaseFilm() {
+    public void addNullReleaseFilmTest() {
         Film film = generateValidFilm();
         film.setReleaseDate(null);
         FilmController filmController = new FilmController();
@@ -143,7 +143,7 @@ public class FilmControllerTest {
         assertEquals("Не указана дата выхода фильма!", ex.getMessage());
     }
     @Test
-    public void addNullDurationFilm() {
+    public void addNullDurationFilmTest() {
         Film film = generateValidFilm();
         film.setDuration(null);
         FilmController filmController = new FilmController();
