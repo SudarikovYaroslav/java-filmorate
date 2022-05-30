@@ -6,6 +6,6 @@ public class IdGenerator {
     private IdGenerator(){}
 
     public static long generateId() {
-        return id++;
+        return ++id;
     }
 }

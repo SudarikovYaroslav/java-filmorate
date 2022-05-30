@@ -13,11 +13,20 @@ import java.util.Collection;
 @RequestMapping("/users")
 @Slf4j
 public class UserController extends Controller<User> {
+    public static final String NULL_USER_LOG = "Передан null user";
+    public static final String NULL_FIELDS_LOG = "Некорректно инициализирован пользователь, есть null поля";
+    public static final String BAD_EMAIL_LOG = "Некорректный адрес email";
+    public static final String BAD_LOGIN_LOG = "Логин пустой или содержит пробелы";
+    public static final String ASSIGNED_NAME_LOG = "Пользователю присвоено имя: ";
+    public static final String BAD_BIRTHDAY_LOG = "День рождения указан в будущем";
+    public static final String NEGATIVE_ID_LOG = "У пользователя отрицательный id";
+    public static final String ASSIGNED_ID_LOG = "Пользователю присвоен id: ";
 
     @PostMapping
     public User add(@RequestBody User user) throws InvalidUserException {
+        isNull(user);
         validate(user);
-        validateIdWhenAdd(user);
+        user.setId(IdGenerator.generateId());
         data.put(user.getId(), user);
         log.debug("Добавлен пользователь: " + user.getLogin());
         return user;
@@ -25,10 +34,13 @@ public class UserController extends Controller<User> {
 
     @PutMapping
     public User update(@RequestBody User user) throws InvalidUserException {
+        isNull(user);
         validate(user);
-        validateIdWhenUpdate(user);
-        data.put(user.getId(), user);
-        log.debug("Обновлён пользователь: " + user.getLogin());
+
+        if (data.containsKey(user.getId())) {
+            data.put(user.getId(), user);
+            log.debug("Обновлён пользователь: " + user.getLogin());
+        }
         return user;
     }
 
@@ -40,69 +52,42 @@ public class UserController extends Controller<User> {
 
     @Override
     protected void validate(User user) throws InvalidUserException {
-        if (user == null) {
-            log.warn("Передано пустое значение пользователя");
-            throw new InvalidUserException("Передано пустое значение пользователя!");
+        if (user.getEmail() == null
+                || user.getLogin() == null
+                || user.getBirthday() == null
+        ) {
+            log.warn(NULL_FIELDS_LOG);
+            throw new NullPointerException(NULL_FIELDS_LOG);
         }
 
-        if (user.getId() < 0) {
-            throw new InvalidUserException("У пользователя не может быть отрицательный id!");
+        if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+            log.warn(BAD_EMAIL_LOG);
+            throw new InvalidUserException(BAD_EMAIL_LOG);
         }
 
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Передано невалидное значение email");
-            throw new InvalidUserException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn("Передано невалидное значение login");
-            throw new InvalidUserException("Логин не может быть пустым и содержать пробелы!");
+        if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+            log.warn(BAD_LOGIN_LOG);
+            throw new InvalidUserException(BAD_LOGIN_LOG);
         }
 
         if (user.getName() == null || user.getName().isBlank()) {
-            log.debug("Передано пустое name, присвоено имя name = " + user.getLogin());
             user.setName(user.getLogin());
-        }
-
-        if (user.getBirthday() == null) {
-            throw new InvalidUserException("Не указана дата рождения пользователя!");
+            log.debug(ASSIGNED_NAME_LOG + user.getName());
         }
 
         if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Передана некорректная дата рождения");
-            throw new InvalidUserException("Дата рождения не может быть в будущем!");
+            log.warn(BAD_BIRTHDAY_LOG);
+            throw new InvalidUserException(BAD_BIRTHDAY_LOG);
+        }
+
+        if (user.getId() < 0) {
+            log.warn(NEGATIVE_ID_LOG);
+            throw new InvalidUserException(NEGATIVE_ID_LOG);
         }
     }
 
-    /**
-     * Для обеспечения не идемпотентности метода POST, в случае, если хранилище содержит пользователя с id, таким же,
-     * как у передаваемого, переданному пользователю присваивается новый id
-     */
-    private void validateIdWhenAdd(User user) throws InvalidUserException {
-        if (user.getId() == 0) {
-            user.setId(IdGenerator.generateId());
-            log.debug("Пользователю " + user.getName() + "не установлен id. Присвоен id = " + user.getId());
-        }
-
-        if (data.containsKey(user.getId())) {
-            user.setId(IdGenerator.generateId());
-            log.debug("Пользователю " + user.getName() + " присвоен id = " + user.getId());
-        }
-    }
-
-    /**
-     * Если у переданного пользователя не был установлен id то, чтобы избежать дублирования, сначала проверяем
-     * хранилище на наличие пользователя по email,
-     * т.к. если такой пользователь уже был добавлен, так же без id, то id ему уже был сгенерирован
-     */
-    private void validateIdWhenUpdate(User user) throws InvalidUserException {
-        if (user.getId() == 0) {
-            for (User existedUser : data.values()) {
-                if (user.getEmail().equals(existedUser.getEmail())) user.setId(existedUser.getId());
-            }
-
-            if (user.getId() == 0) user.setId(IdGenerator.generateId());
-            log.debug("Пользователю " + user.getName() + "не установлен id. Присвоен id=" + user.getId());
-        }
+    private void isNull(User user) {
+        log.warn(NULL_USER_LOG);
+        if (user == null) throw new NullPointerException(NULL_USER_LOG);
     }
 }

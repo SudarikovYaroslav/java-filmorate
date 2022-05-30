@@ -18,12 +18,11 @@ public class UserControllerTest {
     @Test
     public void addTest() throws InvalidUserException {
         UserController userController = new UserController();
-        User zeroIdUser = generateValidUser();
-        zeroIdUser.setId(0);
+        User user = generateValidUser();
         int count = 3;
 
         for (int i = 0; i < count; i++) {
-            userController.add(zeroIdUser);
+            userController.add(user);
         }
         assertEquals(count, userController.get().size());
     }
@@ -45,11 +44,11 @@ public class UserControllerTest {
         UserController userController = new UserController();
         User nullUser = null;
 
-        InvalidUserException ex = assertThrows(InvalidUserException.class, () -> {
+        NullPointerException ex = assertThrows(NullPointerException.class, () -> {
                     userController.add(nullUser);
                 }
         );
-        assertEquals("Передано пустое значение пользователя!", ex.getMessage());
+        assertEquals(UserController.NULL_USER_LOG, ex.getMessage());
     }
 
     @Test
@@ -66,26 +65,25 @@ public class UserControllerTest {
     public void emailValidationTest() throws InvalidUserException {
         UserController userController = new UserController();
         User validUser = generateValidUser();
-        String exReferenceMessage = "Электронная почта не может быть пустой и должна содержать символ @";
 
         userController.add(validUser);
         assertNotEquals(0, userController.get().size());
 
         User nullEmailUser = generateValidUser();
         nullEmailUser.setEmail(null);
-        InvalidUserException exNullEmail = assertThrows(InvalidUserException.class, () -> {
+        NullPointerException exNullEmail = assertThrows(NullPointerException.class, () -> {
                     userController.add(nullEmailUser);
                 }
         );
-        assertEquals(exReferenceMessage, exNullEmail.getMessage());
+        assertEquals(UserController.NULL_FIELDS_LOG, exNullEmail.getMessage());
 
         User blankEmailUser = generateValidUser();
         blankEmailUser.setEmail("");
         InvalidUserException exBlankEmail = assertThrows(InvalidUserException.class, () -> {
-                    userController.add(nullEmailUser);
+                    userController.add(blankEmailUser);
                 }
         );
-        assertEquals(exReferenceMessage, exBlankEmail.getMessage());
+        assertEquals(UserController.BAD_EMAIL_LOG, exBlankEmail.getMessage());
 
         // проверка почты без символа @
         User incorrectFormatEmailUser = generateValidUser();
@@ -94,21 +92,20 @@ public class UserControllerTest {
                     userController.add(incorrectFormatEmailUser);
                 }
         );
-        assertEquals(exReferenceMessage, exIncorrectFormatEmail.getMessage());
+        assertEquals(UserController.BAD_EMAIL_LOG, exIncorrectFormatEmail.getMessage());
     }
 
     @Test
     public void loginValidationTest() {
         UserController userController = new UserController();
-        String exReferenceMessage = "Логин не может быть пустым и содержать пробелы!";
 
         User nullLoginUser = generateValidUser();
         nullLoginUser.setLogin(null);
-        InvalidUserException nullLoginUserEx = assertThrows(InvalidUserException.class, () -> {
+        NullPointerException nullLoginUserEx = assertThrows(NullPointerException.class, () -> {
                     userController.add(nullLoginUser);
                 }
         );
-        assertEquals(exReferenceMessage, nullLoginUserEx.getMessage());
+        assertEquals(UserController.NULL_FIELDS_LOG, nullLoginUserEx.getMessage());
 
         User blankLoginUser = generateValidUser();
         blankLoginUser.setLogin("");
@@ -116,7 +113,7 @@ public class UserControllerTest {
                     userController.add(blankLoginUser);
                 }
         );
-        assertEquals(exReferenceMessage, blankLoginUserEx.getMessage());
+        assertEquals(UserController.BAD_LOGIN_LOG, blankLoginUserEx.getMessage());
 
         User spaceContainsLoginUser = generateValidUser();
         spaceContainsLoginUser.setLogin("user invalid login");
@@ -124,7 +121,7 @@ public class UserControllerTest {
                     userController.add(spaceContainsLoginUser);
                 }
         );
-        assertEquals(exReferenceMessage, spaceLoginUserEx.getMessage());
+        assertEquals(UserController.BAD_LOGIN_LOG, spaceLoginUserEx.getMessage());
     }
 
     @Test
@@ -153,15 +150,15 @@ public class UserControllerTest {
                     userController.add(userFromTheFuture);
                 }
         );
-        assertEquals("Дата рождения не может быть в будущем!", birthdayInFutureEx.getMessage());
+        assertEquals(UserController.BAD_BIRTHDAY_LOG, birthdayInFutureEx.getMessage());
 
         User newerBirthUser = generateValidUser();
         newerBirthUser.setBirthday(null);
-        InvalidUserException neverBirthdayEx = assertThrows(InvalidUserException.class, () -> {
+        NullPointerException neverBirthdayEx = assertThrows(NullPointerException.class, () -> {
                     userController.add(newerBirthUser);
                 }
         );
-        assertEquals("Не указана дата рождения пользователя!", neverBirthdayEx.getMessage());
+        assertEquals(UserController.NULL_FIELDS_LOG, neverBirthdayEx.getMessage());
     }
 
     private User generateValidUser() {

@@ -21,14 +21,12 @@ public class FilmControllerTest {
     @Test
     public void addTest() throws InvalidFilmException {
         FilmController filmController = new FilmController();
-        Film zeroIdFilm = generateValidFilm();
-        zeroIdFilm.setId(0);
-        int count = 3;
+        Film film = generateValidFilm();
 
-        for (int i = 0; i < count; i++) {
-            filmController.add(zeroIdFilm);
+        for (int i = 0; i < 3; i++) {
+            filmController.add(film);
         }
-        assertEquals(count, filmController.get().size());
+        assertEquals(1, filmController.get().size());
     }
 
     @Test
@@ -60,7 +58,7 @@ public class FilmControllerTest {
                     filmController.add(nullNameFilm);
                 }
         );
-        assertEquals("Фильму не установлено название!", exNullName.getMessage());
+        assertEquals(FilmController.NULL_FIELDS_LOG, exNullName.getMessage());
 
         Film blankNameFilm = generateValidFilm();
         blankNameFilm.setName("");
@@ -68,7 +66,7 @@ public class FilmControllerTest {
                     filmController.add(blankNameFilm);
                 }
         );
-        assertEquals("Название фильма не может быть пустым!", exBlankName.getMessage());
+        assertEquals(FilmController.BLANK_NAME_LOG, exBlankName.getMessage());
     }
 
     @Test
@@ -92,8 +90,7 @@ public class FilmControllerTest {
                     filmController.add(tooLongDescriptionFilm);
                 }
         );
-        assertEquals("Максимальная длинна описания фильма: " + FilmController.getMaxDescriptionLength()
-                + " символов!", ex.getMessage());
+        assertEquals(FilmController.TOO_LONG_DESCRIPTION_LOG, ex.getMessage());
 
         Film maxLengthDescriptionFilm = generateValidFilm();
         maxLengthDescriptionFilm.setDescription(generateMaxLengthDescription());
@@ -106,18 +103,17 @@ public class FilmControllerTest {
         FilmController filmController = new FilmController();
         Film firstFilmEver = generateValidFilm();
 
-        firstFilmEver.setReleaseDate(FilmController.getFirstFilmBirthday());
+        firstFilmEver.setReleaseDate(FilmController.FIRST_FILM_BIRTHDAY);
         filmController.add(firstFilmEver);
         assertNotEquals(0, filmController.get().size());
 
         Film beforeEverFilm = generateValidFilm();
-        beforeEverFilm.setReleaseDate(FilmController.getFirstFilmBirthday().minusDays(1));
+        beforeEverFilm.setReleaseDate(FilmController.FIRST_FILM_BIRTHDAY.minusDays(1));
         InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
                     filmController.add(beforeEverFilm);
                 }
         );
-        assertEquals("Дата релиза не может быть раньше чем день рождения кино: "
-                + FilmController.getFirstFilmBirthday(), ex.getMessage());
+        assertEquals(FilmController.BAD_RELEASE_DATE_LOG, ex.getMessage());
     }
 
     @Test
@@ -135,7 +131,7 @@ public class FilmControllerTest {
                     filmController.add(negativeDurationFilm);
                 }
         );
-        assertEquals("Продолжительность фильма должна быть положительной!", ex.getMessage());
+        assertEquals(FilmController.NEGATIVE_DURATION_LOG, ex.getMessage());
     }
 
     @Test
@@ -143,52 +139,12 @@ public class FilmControllerTest {
         Film film = null;
         FilmController filmController = new FilmController();
 
-        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+        NullPointerException ex = assertThrows(NullPointerException.class, () -> {
                     filmController.add(film);
                 }
         );
-        assertEquals("Передано пустое значение фильма!", ex.getMessage());
+        assertEquals(FilmController.NULL_FILM_LOG, ex.getMessage());
     }
-
-    @Test
-    public void addNullDescriptionFilmTest() {
-        Film film = generateValidFilm();
-        film.setDescription(null);
-        FilmController filmController = new FilmController();
-
-        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
-                    filmController.add(film);
-                }
-        );
-        assertEquals("Не указано описание фильма!", ex.getMessage());
-    }
-
-    @Test
-    public void addNullReleaseFilmTest() {
-        Film film = generateValidFilm();
-        film.setReleaseDate(null);
-        FilmController filmController = new FilmController();
-
-        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
-                    filmController.add(film);
-                }
-        );
-        assertEquals("Не указана дата выхода фильма!", ex.getMessage());
-    }
-
-    @Test
-    public void addNullDurationFilmTest() {
-        Film film = generateValidFilm();
-        film.setDuration(null);
-        FilmController filmController = new FilmController();
-
-        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
-                    filmController.add(film);
-                }
-        );
-        assertEquals("Не указана продолжительность фильма!", ex.getMessage());
-    }
-
 
     /**
      * Метод генерирует описание к фильму длинной на 1 символ больше максимально допустимой
@@ -196,7 +152,7 @@ public class FilmControllerTest {
     private String generateTooLongDescription() {
         StringBuilder resultBuilder = new StringBuilder();
 
-        for (int i = 0; i < FilmController.getMaxDescriptionLength() + 1; i++) {
+        for (int i = 0; i < FilmController.MAX_DESCRIPTION_LENGTH + 1; i++) {
             resultBuilder.append("1");
         }
         return resultBuilder.toString();
@@ -206,7 +162,7 @@ public class FilmControllerTest {
     private String generateMaxLengthDescription() {
         StringBuilder resultBuilder = new StringBuilder();
 
-        for (int i = 0; i < FilmController.getMaxDescriptionLength(); i++) {
+        for (int i = 0; i < FilmController.MAX_DESCRIPTION_LENGTH; i++) {
             resultBuilder.append("1");
         }
         return resultBuilder.toString();

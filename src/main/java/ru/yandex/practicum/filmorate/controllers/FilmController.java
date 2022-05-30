@@ -14,24 +14,39 @@ import java.util.Collection;
 @RequestMapping("/films")
 @Slf4j
 public class FilmController extends Controller<Film> {
-    private static final long MAX_DESCRIPTION_LENGTH = 200L;
-    private static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
+    public static final long MAX_DESCRIPTION_LENGTH = 200L;
+    public static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
+    public static final String NULL_FILM_LOG = "Передан null film";
+    public static final String NULL_FIELDS_LOG = "Объект Film некорректно инициализирован, есть null поля!";
+    public static final String BLANK_NAME_LOG = "Пустое имя фильма при инициализации";
+    public static final String TOO_LONG_DESCRIPTION_LOG = "Описание больше " + MAX_DESCRIPTION_LENGTH + " символов";
+    public static final String BAD_RELEASE_DATE_LOG = "Дата релиза раньше дня рождения кино: " + FIRST_FILM_BIRTHDAY;
+    public static final String NEGATIVE_DURATION_LOG = "Отрицательная продолжительность фильма";
+    public static final String NEGATIVE_ID_LOG = "У фильма отрицательный id";
+    public static final String ASSIGNED_ID_LOG = "Фильму присвоен id: ";
 
     @PostMapping
     public Film add(@RequestBody Film film) throws InvalidFilmException {
+        isNull(film);
         validate(film);
-        validateIdWhenAdd(film);
+        film.setId(IdGenerator.generateId());
         data.put(film.getId(), film);
         log.debug("Добавлен фильм: " + film.getName());
         return film;
     }
 
+
+
     @PutMapping
     public Film update(@RequestBody Film film) throws InvalidFilmException {
+        isNull(film);
         validate(film);
-        validateIdWhenUpdate(film);
-        data.put(film.getId(), film);
-        log.debug("Обновлён фильм: " + film.getName());
+
+        if (data.containsKey(film.getId())) {
+            data.put(film.getId(), film);
+            log.debug("Обновлён фильм: " + film.getName());
+        }
+
         return film;
     }
 
@@ -43,96 +58,39 @@ public class FilmController extends Controller<Film> {
 
     @Override
     protected void validate(Film film) throws InvalidFilmException {
-        if (film == null) {
-            log.warn("Передано пустое значение фильма");
-            throw new InvalidFilmException("Передано пустое значение фильма!");
-        }
-
-        if (film.getId() < 0) {
-            throw new InvalidFilmException("У фильма не может быть отрицательный id!");
-        }
-
         if (film.getName() == null) {
-            log.warn("у переданного фильма не установлено название");
-            throw new InvalidFilmException("Фильму не установлено название!");
-        }
-
-        if (film.getDescription() == null) {
-            log.warn("Передана недопустимая длинна описания фильма");
-            throw new InvalidFilmException("Не указано описание фильма!");
-        }
-
-        if (film.getReleaseDate() == null) {
-            log.warn("Передана некорректная дата релиза фильма");
-            throw new InvalidFilmException("Не указана дата выхода фильма!");
-        }
-
-        if (film.getDuration() == null) {
-            log.warn("Передана некорректная продолжительность фильма");
-            throw new InvalidFilmException("Не указана продолжительность фильма!");
+            log.warn(NULL_FIELDS_LOG);
+            throw new InvalidFilmException(NULL_FIELDS_LOG);
         }
 
         if (film.getName().isBlank()) {
-            log.warn("Передано пустое название фильма");
-            throw new InvalidFilmException("Название фильма не может быть пустым!");
+            log.warn(BLANK_NAME_LOG);
+            throw  new InvalidFilmException(BLANK_NAME_LOG);
         }
 
-        if (film.getDescription().length() > MAX_DESCRIPTION_LENGTH) {
-            log.warn("Передана недопустимая длинна описания фильма");
-            throw new InvalidFilmException(
-                    "Максимальная длинна описания фильма: " + MAX_DESCRIPTION_LENGTH + " символов!");
+        if (film.getDescription() != null && film.getDescription().length() > MAX_DESCRIPTION_LENGTH) {
+            log.warn(TOO_LONG_DESCRIPTION_LOG);
+            throw new InvalidFilmException(TOO_LONG_DESCRIPTION_LOG);
         }
 
-        if (film.getReleaseDate().isBefore(FIRST_FILM_BIRTHDAY)) {
-            log.warn("Передана некорректная дата релиза фильма");
-            throw new InvalidFilmException(
-                    "Дата релиза не может быть раньше чем день рождения кино: " + FIRST_FILM_BIRTHDAY);
+        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(FIRST_FILM_BIRTHDAY)) {
+            log.warn(BAD_RELEASE_DATE_LOG);
+            throw new InvalidFilmException(BAD_RELEASE_DATE_LOG);
         }
 
-        if (film.getDuration().getSeconds() < 0) {
-            log.warn("Передана некорректная продолжительность фильма");
-            throw new InvalidFilmException("Продолжительность фильма должна быть положительной!");
-        }
-    }
-
-    /**
-     * Для обеспечения не идемпотентности метода POST, в случае, если хранилище содержит фильм с id, таким же, как у
-     * передаваемого, переданному фильму присваивается новый id
-     */
-    private void validateIdWhenAdd(Film film) throws InvalidFilmException {
-        if (film.getId() == 0) {
-            film.setId(IdGenerator.generateId());
-            log.debug("У переданного фильма не установлен id, присвоен id = " + film.getId());
+        if (film.getDuration() != null && film.getDuration().isNegative()) {
+            log.warn(NEGATIVE_DURATION_LOG);
+            throw new InvalidFilmException(NEGATIVE_DURATION_LOG);
         }
 
-        if (data.containsKey(film.getId())) {
-            film.setId(IdGenerator.generateId());
-            log.debug("Переданному фильму установлен id = " + film.getId());
+        if (film.getId() < 0) {
+            log.warn(NEGATIVE_ID_LOG);
+            throw new InvalidFilmException(NEGATIVE_ID_LOG);
         }
     }
 
-    /**
-     * Если у переданного фильма не был установлен id то, чтобы избежать дублирования сначала проверяем хранилище
-     * на наличие фильма по названию,
-     * т.к. если фильм с таким названием был добавлен так же без id, то id ему уже был сгенерирован
-     */
-    private void validateIdWhenUpdate(Film film) throws InvalidFilmException {
-        if (film.getId() == 0) {
-            for (Film existedFilm : data.values()) {
-                if (film.getName().equals(existedFilm.getName())) {
-                    film.setId(existedFilm.getId());
-                }
-            }
-            if (film.getId() == 0) film.setId(IdGenerator.generateId());
-            log.debug("У переданного фильма не установлен id, присвоен id=" + film.getId());
-        }
-    }
-
-    public static long getMaxDescriptionLength() {
-        return MAX_DESCRIPTION_LENGTH;
-    }
-
-    public static LocalDate getFirstFilmBirthday() {
-        return FIRST_FILM_BIRTHDAY;
+    private void isNull(Film film) {
+        log.warn(NULL_FILM_LOG);
+        if (film == null) throw new NullPointerException(NULL_FILM_LOG);
     }
 }
