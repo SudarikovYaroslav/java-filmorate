@@ -119,8 +119,8 @@ public class FilmController extends Controller<Film> {
      на наличие фильма по названию,
      т.к. если фильм с таким названием был добавлен так же без id, то id ему уже был сгенерирован
      */
-    private void validateIdWhenUpdate(Film film) {
-        if (film.getId() <= 0) {
+    private void validateIdWhenUpdate(Film film) throws InvalidFilmException {
+        if (film.getId() == 0) {
             for (Film existedFilm : data.values()) {
                 if (film.getName().equals(existedFilm.getName())) {
                     film.setId(existedFilm.getId());
@@ -128,6 +128,10 @@ public class FilmController extends Controller<Film> {
             }
             if (film.getId() <= 0) film.setId(IdGenerator.generateId());
             log.debug("У переданного фильма не установлен id, присвоен id=" + film.getId());
+        }
+
+        if (film.getId() < 0) {
+            throw new InvalidFilmException("У обновляемого фильма не может быть отрицательный id!");
         }
     }
 }

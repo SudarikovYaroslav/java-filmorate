@@ -89,13 +89,18 @@ public class UserController extends Controller<User> {
      хранилище на наличие пользователя по email,
      т.к. если такой пользователь уже был добавлен, так же без id, то id ему уже был сгенерирован
      */
-    private void validateIdWhenUpdate(User user) {
-        if (user.getId() <= 0) {
+    private void validateIdWhenUpdate(User user) throws InvalidUserException {
+        if (user.getId() == 0) {
             for (User existedUser : data.values()) {
                 if (user.getEmail().equals(existedUser.getEmail())) user.setId(existedUser.getId());
             }
-            if (user.getId() <= 0) user.setId(IdGenerator.generateId());
+
+            if (user.getId() == 0) user.setId(IdGenerator.generateId());
             log.debug("Пользователю " + user.getName() + "не установлен id. Присвоен id=" + user.getId());
+        }
+
+        if (user.getId() < 0) {
+            throw new InvalidUserException("у обновляемого пользователя не может быть отрицательный id!");
         }
     }
 }
