@@ -18,19 +18,21 @@ public class FilmController extends Controller<Film> {
     private static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
     @PostMapping
-    public void add(@RequestBody Film film) throws InvalidFilmException {
+    public Film add(@RequestBody Film film) throws InvalidFilmException {
         validate(film);
         validateIdWhenAdd(film);
         data.put(film.getId(), film);
         log.debug("Добавлен фильм: " + film.getName());
+        return film;
     }
 
     @PutMapping
-    public void update(@RequestBody Film film) throws InvalidFilmException {
+    public Film update(@RequestBody Film film) throws InvalidFilmException {
         validate(film);
         validateIdWhenUpdate(film);
         data.put(film.getId(), film);
         log.debug("Обновлён фильм: " + film.getName());
+        return film;
     }
 
     @GetMapping

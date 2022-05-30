@@ -15,19 +15,21 @@ import java.util.Collection;
 public class UserController extends Controller<User> {
 
     @PostMapping
-    public void add(@RequestBody User user) throws InvalidUserException {
+    public User add(@RequestBody User user) throws InvalidUserException {
         validate(user);
         validateIdWhenAdd(user);
         data.put(user.getId(), user);
         log.debug("Добавлен пользователь: " + user.getLogin());
+        return user;
     }
 
     @PutMapping
-    public void update(@RequestBody User user) throws InvalidUserException {
+    public User update(@RequestBody User user) throws InvalidUserException {
         validate(user);
         validateIdWhenUpdate(user);
         data.put(user.getId(), user);
         log.debug("Обновлён пользователь: " + user.getLogin());
+        return user;
     }
 
     @GetMapping

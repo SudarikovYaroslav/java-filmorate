@@ -6,9 +6,9 @@ public abstract class Controller<T> {
 
     protected Map<Long,T> data = new HashMap<>();
 
-    abstract public void add(T t) throws Exception;
+    abstract public T add(T t) throws Exception;
 
-    abstract public void update(T t) throws Exception;
+    abstract public T update(T t) throws Exception;
 
     abstract public Collection<T> get() throws Exception;
 
