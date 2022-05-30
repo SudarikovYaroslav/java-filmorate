@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.IdGenerator;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ public class FilmController extends Controller<Film> {
     @PostMapping
     public void add(@RequestBody Film film) throws InvalidFilmException {
         validate(film);
+        validateIdWhenAdd(film);
         data.put(film.getId(),film);
         log.debug("Добавлен фильм: " + film.getName());
     }
@@ -27,6 +29,7 @@ public class FilmController extends Controller<Film> {
     @PutMapping
     public void update(@RequestBody Film film) throws InvalidFilmException {
         validate(film);
+        validateIdWhenUpdate(film);
         data.put(film.getId(), film);
         log.debug("Обновлён фильм: " + film.getName());
     }
@@ -47,19 +50,6 @@ public class FilmController extends Controller<Film> {
         if (film.getName() == null) {
             log.warn("у переданного фильма не установлено название");
             throw new InvalidFilmException("Фильму не установлено название!");
-        }
-
-        // Если у переданного фильма не был установлен id то, чтобы избежать дублирования сначала проверяем хранилище
-        // на наличие фильма по названию,
-        // т.к. если фильм с таким названием был добавлен так же без id, то id ему уже был сгенерирован
-        if (film.getId() <= 0) {
-            for (Film existedFilm : data.values()) {
-                if (film.getName().equals(existedFilm.getName())) {
-                    film.setId(existedFilm.getId());
-                }
-            }
-            if (film.getId() <= 0) film.setId(IdGenerator.generateId());
-            log.debug("У переданного фильма не установлен id, присвоен id=" + film.getId());
         }
 
         if (film.getDescription() == null) {
@@ -106,5 +96,38 @@ public class FilmController extends Controller<Film> {
 
     public static LocalDate getFirstFilmBirthday() {
         return FIRST_FILM_BIRTHDAY;
+    }
+
+    /**
+     Для обеспечения не идемпотентности метода POST, в случае, если хранилище содержит фильм с id, таким же, как у
+     передаваемого, переданному фильму присваивается новый id
+     */
+    private void validateIdWhenAdd(Film film) {
+        if (film.getId() <= 0) {
+            film.setId(IdGenerator.generateId());
+            log.debug("У переданного фильма не установлен id, присвоен id = " + film.getId());
+        }
+
+        if (data.containsKey(film.getId())) {
+            film.setId(IdGenerator.generateId());
+            log.debug("Переданному фильму установлен id = " + film.getId());
+        }
+    }
+
+    /**
+     Если у переданного фильма не был установлен id то, чтобы избежать дублирования сначала проверяем хранилище
+     на наличие фильма по названию,
+     т.к. если фильм с таким названием был добавлен так же без id, то id ему уже был сгенерирован
+     */
+    private void validateIdWhenUpdate(Film film) {
+        if (film.getId() <= 0) {
+            for (Film existedFilm : data.values()) {
+                if (film.getName().equals(existedFilm.getName())) {
+                    film.setId(existedFilm.getId());
+                }
+            }
+            if (film.getId() <= 0) film.setId(IdGenerator.generateId());
+            log.debug("У переданного фильма не установлен id, присвоен id=" + film.getId());
+        }
     }
 }

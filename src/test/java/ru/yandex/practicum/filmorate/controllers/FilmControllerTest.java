@@ -22,6 +22,19 @@ public class FilmControllerTest {
     private static final int STATUS_OK = 200;
 
     @Test
+    public void addTest() throws InvalidFilmException {
+        FilmController filmController = new FilmController();
+        Film zeroIdFilm = generateValidFilm();
+        zeroIdFilm.setId(0);
+        int count = 3;
+
+        for (int i = 0; i < count; i++) {
+            filmController.add(zeroIdFilm);
+        }
+        assertEquals(count, filmController.get().size());
+    }
+
+    @Test
     public void updateTest() throws InvalidFilmException {
         FilmController filmController = new FilmController();
         Film zeroIdFilm = generateValidFilm();

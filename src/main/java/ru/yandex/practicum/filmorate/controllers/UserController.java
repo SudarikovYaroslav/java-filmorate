@@ -17,6 +17,7 @@ public class UserController extends Controller<User> {
     @PostMapping
     public void add(@RequestBody User user) throws InvalidUserException {
         validate(user);
+        validateIdWhenAdd(user);
         data.put(user.getId(), user);
         log.debug("Добавлен пользователь: " + user.getLogin());
     }
@@ -24,6 +25,7 @@ public class UserController extends Controller<User> {
     @PutMapping
     public void update(@RequestBody User user) throws InvalidUserException {
         validate(user);
+        validateIdWhenUpdate(user);
         data.put(user.getId(), user);
         log.debug("Обновлён пользователь: " + user.getLogin());
     }
@@ -46,17 +48,6 @@ public class UserController extends Controller<User> {
             throw new InvalidUserException("Электронная почта не может быть пустой и должна содержать символ @");
         }
 
-        // Если у переданного пользователя не был установлен id то, чтобы избежать дублирования, сначала проверяем
-        // хранилище на наличие пользователя по email,
-        // т.к. если такой пользователь уже был добавлен, так же без id, то id ему уже был сгенерирован
-        if (user.getId() <= 0) {
-            for (User existedUser : data.values()) {
-                if (user.getEmail().equals(existedUser.getEmail())) user.setId(existedUser.getId());
-            }
-            if (user.getId() <= 0) user.setId(IdGenerator.generateId());
-            log.debug("Пользователю " + user.getName() + "не установлен id. Присвоен id=" + user.getId());
-        }
-
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             log.warn("Передано невалидное значение login");
             throw new InvalidUserException("Логин не может быть пустым и содержать пробелы!");
@@ -74,6 +65,37 @@ public class UserController extends Controller<User> {
         if (user.getBirthday().isAfter(LocalDate.now())) {
             log.warn("Передана некорректная дата рождения");
             throw new InvalidUserException("Дата рождения не может быть в будущем!");
+        }
+    }
+
+    /**
+     Для обеспечения не идемпотентности метода POST, в случае, если хранилище содержит пользователя с id, таким же,
+     как у передаваемого, переданному пользователю присваивается новый id
+     */
+    private void validateIdWhenAdd(User user) {
+        if (user.getId() <= 0) {
+            user.setId(IdGenerator.generateId());
+            log.debug("Пользователю " + user.getName() + "не установлен id. Присвоен id = " + user.getId());
+        }
+
+        if (data.containsKey(user.getId())) {
+            user.setId(IdGenerator.generateId());
+            log.debug("Пользователю " + user.getName() + " присвоен id = " + user.getId());
+        }
+    }
+
+    /**
+     Если у переданного пользователя не был установлен id то, чтобы избежать дублирования, сначала проверяем
+     хранилище на наличие пользователя по email,
+     т.к. если такой пользователь уже был добавлен, так же без id, то id ему уже был сгенерирован
+     */
+    private void validateIdWhenUpdate(User user) {
+        if (user.getId() <= 0) {
+            for (User existedUser : data.values()) {
+                if (user.getEmail().equals(existedUser.getEmail())) user.setId(existedUser.getId());
+            }
+            if (user.getId() <= 0) user.setId(IdGenerator.generateId());
+            log.debug("Пользователю " + user.getName() + "не установлен id. Присвоен id=" + user.getId());
         }
     }
 }
