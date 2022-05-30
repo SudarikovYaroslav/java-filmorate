@@ -34,13 +34,20 @@ public class FilmControllerTest {
     @Test
     public void updateTest() throws InvalidFilmException {
         FilmController filmController = new FilmController();
-        Film zeroIdFilm = generateValidFilm();
-        zeroIdFilm.setId(0);
+        Film film = generateValidFilm();
+        filmController.add(film);
 
         for (int i = 0; i < 3; i++) {
-            filmController.update(zeroIdFilm);
+            filmController.update(film);
         }
         assertEquals(1, filmController.get().size());
+
+        film.setId(0);
+        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+                filmController.update(film);
+            }
+        );
+        assertEquals("Обновление невозможно. Фильма с id = " + film.getId() + " не найдено", ex.getMessage());
     }
 
     @Test

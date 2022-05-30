@@ -93,14 +93,6 @@ public class FilmController extends Controller<Film> {
         }
     }
 
-    public static long getMaxDescriptionLength() {
-        return MAX_DESCRIPTION_LENGTH;
-    }
-
-    public static LocalDate getFirstFilmBirthday() {
-        return FIRST_FILM_BIRTHDAY;
-    }
-
     /**
      * Для обеспечения не идемпотентности метода POST, в случае, если хранилище содержит фильм с id, таким же, как у
      * передаваемого, переданному фильму присваивается новый id
@@ -127,10 +119,21 @@ public class FilmController extends Controller<Film> {
             for (Film existedFilm : data.values()) {
                 if (film.getName().equals(existedFilm.getName())) {
                     film.setId(existedFilm.getId());
+                    break;
                 }
             }
-            if (film.getId() <= 0) film.setId(IdGenerator.generateId());
-            log.debug("У переданного фильма не установлен id, присвоен id=" + film.getId());
         }
+
+        if (film.getId() == 0 || !data.containsKey(film.getId())) {
+            throw new InvalidFilmException("Обновление невозможно. Фильма с id = " + film.getId() + " не найдено");
+        }
+    }
+
+    public static long getMaxDescriptionLength() {
+        return MAX_DESCRIPTION_LENGTH;
+    }
+
+    public static LocalDate getFirstFilmBirthday() {
+        return FIRST_FILM_BIRTHDAY;
     }
 }
