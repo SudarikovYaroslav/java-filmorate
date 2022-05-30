@@ -8,7 +8,7 @@ import java.util.Objects;
 
 @Builder
 public class Film {
-    private Long id;
+    private long id;
     private String name;
     private String description;
     private LocalDate releaseDate;
@@ -22,11 +22,11 @@ public class Film {
         this.duration = duration;
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

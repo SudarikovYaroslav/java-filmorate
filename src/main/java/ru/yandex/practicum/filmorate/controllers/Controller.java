@@ -12,8 +12,5 @@ public abstract class Controller<T> {
 
     abstract public Collection<T> get() throws Exception;
 
-    protected void validate(T t) throws Exception {
-    }
-
-    ;
+    protected void validate(T t) throws Exception {}
 }

@@ -8,7 +8,7 @@ import java.util.Objects;
 
 @Builder
 public class User {
-    private Long id;
+    private long id;
 
     @Email
     private String email;
@@ -24,11 +24,11 @@ public class User {
         this.birthday = birthday;
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

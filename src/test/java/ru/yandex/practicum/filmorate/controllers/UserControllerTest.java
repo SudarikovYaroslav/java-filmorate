@@ -16,6 +16,18 @@ public class UserControllerTest {
     private static final LocalDate BIRTHDAY = LocalDate.of(2000, 1, 1);
 
     @Test
+    public void updateTest() throws InvalidUserException {
+        UserController userController = new UserController();
+        User zeroIdUser = generateValidUser();
+        zeroIdUser.setId(0);
+
+        for (int i = 0; i < 3; i++) {
+            userController.update(zeroIdUser);
+        }
+        assertEquals(1, userController.get().size());
+    }
+
+    @Test
     public void addNullUserTest() {
         UserController userController = new UserController();
         User nullUser = null;
@@ -32,7 +44,7 @@ public class UserControllerTest {
         UserController userController = new UserController();
 
         User invalidIdUser = generateValidUser();
-        invalidIdUser.setId(null);
+        invalidIdUser.setId(0);
         userController.add(invalidIdUser);
         assertNotEquals(0, userController.get().size());
     }

@@ -44,14 +44,22 @@ public class FilmController extends Controller<Film> {
             throw new InvalidFilmException("Передано пустое значение фильма!");
         }
 
-        if (film.getId() == null) {
-            film.setId(IdGenerator.generateId());
-            log.warn("У переданного фильма не установлен id, присвоен id=" + film.getId());
-        }
-
         if (film.getName() == null) {
             log.warn("у переданного фильма не установлено название");
             throw new InvalidFilmException("Фильму не установлено название!");
+        }
+
+        // Если у переданного фильма не был установлен id то, чтобы избежать дублирования сначала проверяем хранилище
+        // на наличие фильма по названию,
+        // т.к. если фильм с таким названием был добавлен так же без id, то id ему уже был сгенерирован
+        if (film.getId() <= 0) {
+            for (Film existedFilm : data.values()) {
+                if (film.getName().equals(existedFilm.getName())) {
+                    film.setId(existedFilm.getId());
+                }
+            }
+            if (film.getId() <= 0) film.setId(IdGenerator.generateId());
+            log.debug("У переданного фильма не установлен id, присвоен id=" + film.getId());
         }
 
         if (film.getDescription() == null) {

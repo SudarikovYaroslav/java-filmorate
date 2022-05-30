@@ -41,14 +41,20 @@ public class UserController extends Controller<User> {
             throw new InvalidUserException("Передано пустое значение пользователя!");
         }
 
-        if (user.getId() == null) {
-            user.setId(IdGenerator.generateId());
-            log.warn("Пользователю " + user.getName() + " присвоен id=" + user.getId());
-        }
-
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             log.warn("Передано невалидное значение email");
             throw new InvalidUserException("Электронная почта не может быть пустой и должна содержать символ @");
+        }
+
+        // Если у переданного пользователя не был установлен id то, чтобы избежать дублирования, сначала проверяем
+        // хранилище на наличие пользователя по email,
+        // т.к. если такой пользователь уже был добавлен, так же без id, то id ему уже был сгенерирован
+        if (user.getId() <= 0) {
+            for (User existedUser : data.values()) {
+                if (user.getEmail().equals(existedUser.getEmail())) user.setId(existedUser.getId());
+            }
+            if (user.getId() <= 0) user.setId(IdGenerator.generateId());
+            log.debug("Пользователю " + user.getName() + "не установлен id. Присвоен id=" + user.getId());
         }
 
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {

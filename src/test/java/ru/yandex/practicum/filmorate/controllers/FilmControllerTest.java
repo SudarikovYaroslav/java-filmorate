@@ -22,6 +22,18 @@ public class FilmControllerTest {
     private static final int STATUS_OK = 200;
 
     @Test
+    public void updateTest() throws InvalidFilmException {
+        FilmController filmController = new FilmController();
+        Film zeroIdFilm = generateValidFilm();
+        zeroIdFilm.setId(0);
+
+        for (int i = 0; i < 3; i++) {
+            filmController.update(zeroIdFilm);
+        }
+        assertEquals(1, filmController.get().size());
+    }
+
+    @Test
     public void nameValidationTest() throws InvalidFilmException {
         Film film = generateValidFilm();
         FilmController filmController = new FilmController();
@@ -50,7 +62,7 @@ public class FilmControllerTest {
         FilmController filmController = new FilmController();
 
         Film invalidIdFilm = generateValidFilm();
-        invalidIdFilm.setId(null);
+        invalidIdFilm.setId(0);
         filmController.add(invalidIdFilm);
         assertNotEquals(0, filmController.get().size());
     }
