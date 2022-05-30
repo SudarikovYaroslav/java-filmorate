@@ -43,6 +43,10 @@ public class UserController extends Controller<User> {
             throw new InvalidUserException("Передано пустое значение пользователя!");
         }
 
+        if (user.getId() < 0) {
+            throw new InvalidUserException("У пользователя не может быть отрицательный id!");
+        }
+
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             log.warn("Передано невалидное значение email");
             throw new InvalidUserException("Электронная почта не может быть пустой и должна содержать символ @");
@@ -69,11 +73,11 @@ public class UserController extends Controller<User> {
     }
 
     /**
-     Для обеспечения не идемпотентности метода POST, в случае, если хранилище содержит пользователя с id, таким же,
-     как у передаваемого, переданному пользователю присваивается новый id
+     * Для обеспечения не идемпотентности метода POST, в случае, если хранилище содержит пользователя с id, таким же,
+     * как у передаваемого, переданному пользователю присваивается новый id
      */
-    private void validateIdWhenAdd(User user) {
-        if (user.getId() <= 0) {
+    private void validateIdWhenAdd(User user) throws InvalidUserException {
+        if (user.getId() == 0) {
             user.setId(IdGenerator.generateId());
             log.debug("Пользователю " + user.getName() + "не установлен id. Присвоен id = " + user.getId());
         }
@@ -85,9 +89,9 @@ public class UserController extends Controller<User> {
     }
 
     /**
-     Если у переданного пользователя не был установлен id то, чтобы избежать дублирования, сначала проверяем
-     хранилище на наличие пользователя по email,
-     т.к. если такой пользователь уже был добавлен, так же без id, то id ему уже был сгенерирован
+     * Если у переданного пользователя не был установлен id то, чтобы избежать дублирования, сначала проверяем
+     * хранилище на наличие пользователя по email,
+     * т.к. если такой пользователь уже был добавлен, так же без id, то id ему уже был сгенерирован
      */
     private void validateIdWhenUpdate(User user) throws InvalidUserException {
         if (user.getId() == 0) {
@@ -97,10 +101,6 @@ public class UserController extends Controller<User> {
 
             if (user.getId() == 0) user.setId(IdGenerator.generateId());
             log.debug("Пользователю " + user.getName() + "не установлен id. Присвоен id=" + user.getId());
-        }
-
-        if (user.getId() < 0) {
-            throw new InvalidUserException("у обновляемого пользователя не может быть отрицательный id!");
         }
     }
 }

@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.IdGenerator;
 
-import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDate;
 
@@ -18,8 +17,6 @@ public class FilmControllerTest {
     private static final String DESCRIPTION = "Test description";
     private static final LocalDate RELEASE_DATE = LocalDate.of(2000, 1, 1);
     private static final Duration DURATION = Duration.ofHours(2);
-    private static final URI URI = java.net.URI.create("http://localhost:8080/films");
-    private static final int STATUS_OK = 200;
 
     @Test
     public void addTest() throws InvalidFilmException {

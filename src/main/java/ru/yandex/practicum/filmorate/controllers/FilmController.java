@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.IdGenerator;
 
 import java.time.LocalDate;
@@ -22,7 +21,7 @@ public class FilmController extends Controller<Film> {
     public void add(@RequestBody Film film) throws InvalidFilmException {
         validate(film);
         validateIdWhenAdd(film);
-        data.put(film.getId(),film);
+        data.put(film.getId(), film);
         log.debug("Добавлен фильм: " + film.getName());
     }
 
@@ -45,6 +44,10 @@ public class FilmController extends Controller<Film> {
         if (film == null) {
             log.warn("Передано пустое значение фильма");
             throw new InvalidFilmException("Передано пустое значение фильма!");
+        }
+
+        if (film.getId() < 0) {
+            throw new InvalidFilmException("У фильма не может быть отрицательный id!");
         }
 
         if (film.getName() == null) {
@@ -99,11 +102,11 @@ public class FilmController extends Controller<Film> {
     }
 
     /**
-     Для обеспечения не идемпотентности метода POST, в случае, если хранилище содержит фильм с id, таким же, как у
-     передаваемого, переданному фильму присваивается новый id
+     * Для обеспечения не идемпотентности метода POST, в случае, если хранилище содержит фильм с id, таким же, как у
+     * передаваемого, переданному фильму присваивается новый id
      */
-    private void validateIdWhenAdd(Film film) {
-        if (film.getId() <= 0) {
+    private void validateIdWhenAdd(Film film) throws InvalidFilmException {
+        if (film.getId() == 0) {
             film.setId(IdGenerator.generateId());
             log.debug("У переданного фильма не установлен id, присвоен id = " + film.getId());
         }
@@ -115,9 +118,9 @@ public class FilmController extends Controller<Film> {
     }
 
     /**
-     Если у переданного фильма не был установлен id то, чтобы избежать дублирования сначала проверяем хранилище
-     на наличие фильма по названию,
-     т.к. если фильм с таким названием был добавлен так же без id, то id ему уже был сгенерирован
+     * Если у переданного фильма не был установлен id то, чтобы избежать дублирования сначала проверяем хранилище
+     * на наличие фильма по названию,
+     * т.к. если фильм с таким названием был добавлен так же без id, то id ему уже был сгенерирован
      */
     private void validateIdWhenUpdate(Film film) throws InvalidFilmException {
         if (film.getId() == 0) {
@@ -128,10 +131,6 @@ public class FilmController extends Controller<Film> {
             }
             if (film.getId() <= 0) film.setId(IdGenerator.generateId());
             log.debug("У переданного фильма не установлен id, присвоен id=" + film.getId());
-        }
-
-        if (film.getId() < 0) {
-            throw new InvalidFilmException("У обновляемого фильма не может быть отрицательный id!");
         }
     }
 }
