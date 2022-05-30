@@ -43,11 +43,8 @@ public class FilmControllerTest {
         assertEquals(1, filmController.get().size());
 
         film.setId(0);
-        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
-                filmController.update(film);
-            }
-        );
-        assertEquals("Обновление невозможно. Фильма с id = " + film.getId() + " не найдено", ex.getMessage());
+        filmController.update(film);
+        assertEquals(2, filmController.get().size());
     }
 
     @Test
