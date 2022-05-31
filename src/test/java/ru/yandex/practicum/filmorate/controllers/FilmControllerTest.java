@@ -4,9 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.IdGenerator;
+import ru.yandex.practicum.filmorate.service.FilmIdGenerator;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,33 +15,50 @@ public class FilmControllerTest {
     private static final String NAME = "Test film name";
     private static final String DESCRIPTION = "Test description";
     private static final LocalDate RELEASE_DATE = LocalDate.of(2000, 1, 1);
-    private static final Duration DURATION = Duration.ofHours(2);
+    private static final long DURATION = 120L;
 
     @Test
     public void addTest() throws InvalidFilmException {
         FilmController filmController = new FilmController();
-        Film film = generateValidFilm();
 
-        for (int i = 0; i < 3; i++) {
-            filmController.add(film);
-        }
-        assertEquals(1, filmController.get().size());
+        Film film1 = generateValidFilm();
+        film1.setId(0);
+        film1.setName("Film one");
+
+        Film film2 = generateValidFilm();
+        film2.setId(0);
+        film2.setName("Film two");
+
+        Film film3 = generateValidFilm();
+        film3.setId(0);
+        film3.setName("Film three");
+
+        filmController.add(film1);
+        filmController.add(film2);
+        filmController.add(film3);
+
+        assertEquals(3, filmController.get().size());
     }
 
     @Test
     public void updateTest() throws InvalidFilmException {
         FilmController filmController = new FilmController();
-        Film film = generateValidFilm();
-        filmController.add(film);
+        Film goalFilm = generateValidFilm();
+        filmController.add(goalFilm);
 
-        for (int i = 0; i < 3; i++) {
-            filmController.update(film);
+        Film modifiedGoalFilm = generateValidFilm();
+        modifiedGoalFilm.setName("Modified name");
+        long id = goalFilm.getId();
+        modifiedGoalFilm.setId(id);
+
+        filmController.update(modifiedGoalFilm);
+        assertEquals(goalFilm.getId(), modifiedGoalFilm.getId());
+
+        for (Film f : filmController.get()) {
+            if (f.getId() == id) {
+                assertEquals("Modified name", f.getName());
+            }
         }
-        assertEquals(1, filmController.get().size());
-
-        film.setId(0);
-        filmController.update(film);
-        assertEquals(2, filmController.get().size());
     }
 
     @Test
@@ -120,13 +136,13 @@ public class FilmControllerTest {
     public void durationValidationTest() throws InvalidFilmException {
         FilmController filmController = new FilmController();
         Film zeroDurationFilm = generateValidFilm();
-        zeroDurationFilm.setDuration(Duration.ofMillis(0));
+        zeroDurationFilm.setDuration(0);
 
         filmController.add(zeroDurationFilm);
         assertNotEquals(0, filmController.get().size());
 
         Film negativeDurationFilm = generateValidFilm();
-        negativeDurationFilm.setDuration(Duration.ofMillis(-1));
+        negativeDurationFilm.setDuration(-1);
         InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
                     filmController.add(negativeDurationFilm);
                 }
@@ -170,7 +186,7 @@ public class FilmControllerTest {
 
     private Film generateValidFilm() {
         return Film.builder()
-                .id(IdGenerator.generateId())
+                .id(FilmIdGenerator.generate())
                 .name(NAME)
                 .description(DESCRIPTION)
                 .releaseDate(RELEASE_DATE)

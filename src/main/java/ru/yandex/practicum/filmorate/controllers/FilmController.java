@@ -4,11 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.IdGenerator;
+import ru.yandex.practicum.filmorate.service.FilmIdGenerator;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
@@ -24,12 +25,14 @@ public class FilmController extends Controller<Film> {
     public static final String NEGATIVE_DURATION_LOG = "Отрицательная продолжительность фильма";
     public static final String NEGATIVE_ID_LOG = "У фильма отрицательный id";
     public static final String ASSIGNED_ID_LOG = "Фильму присвоен id: ";
+    public static final String UPDATE_FAIL_LOG = "Попытка обновить несуществующий фильм";
 
     @PostMapping
     public Film add(@RequestBody Film film) throws InvalidFilmException {
         isNull(film);
         validate(film);
-        film.setId(IdGenerator.generateId());
+        film.setId(FilmIdGenerator.generate());
+        log.debug(ASSIGNED_ID_LOG + film.getId());
         data.put(film.getId(), film);
         log.debug("Добавлен фильм: " + film.getName());
         return film;
@@ -45,15 +48,17 @@ public class FilmController extends Controller<Film> {
         if (data.containsKey(film.getId())) {
             data.put(film.getId(), film);
             log.debug("Обновлён фильм: " + film.getName());
+        } else {
+            log.warn(UPDATE_FAIL_LOG);
+            throw new InvalidFilmException(UPDATE_FAIL_LOG);
         }
-
         return film;
     }
 
     @GetMapping
-    public Collection<Film> get() {
+    public List<Film> get() {
         log.debug("Текущее количество фильмов: " + data.size());
-        return data.values();
+        return new ArrayList<>(data.values());
     }
 
     @Override
@@ -78,7 +83,7 @@ public class FilmController extends Controller<Film> {
             throw new InvalidFilmException(BAD_RELEASE_DATE_LOG);
         }
 
-        if (film.getDuration() != null && film.getDuration().isNegative()) {
+        if (film.getDuration() < 0) {
             log.warn(NEGATIVE_DURATION_LOG);
             throw new InvalidFilmException(NEGATIVE_DURATION_LOG);
         }

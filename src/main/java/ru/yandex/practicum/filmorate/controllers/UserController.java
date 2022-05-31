@@ -4,10 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.IdGenerator;
+import ru.yandex.practicum.filmorate.service.UserIdGenerator;
 
 import java.time.LocalDate;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -26,7 +27,8 @@ public class UserController extends Controller<User> {
     public User add(@RequestBody User user) throws InvalidUserException {
         isNull(user);
         validate(user);
-        user.setId(IdGenerator.generateId());
+        user.setId(UserIdGenerator.generate());
+        log.debug(ASSIGNED_ID_LOG + user.getId());
         data.put(user.getId(), user);
         log.debug("Добавлен пользователь: " + user.getLogin());
         return user;
@@ -45,9 +47,9 @@ public class UserController extends Controller<User> {
     }
 
     @GetMapping
-    public Collection<User> get() {
+    public List<User> get() {
         log.debug("Текущее количество пользователей: " + data.size());
-        return data.values();
+        return new ArrayList<>(data.values());
     }
 
     @Override

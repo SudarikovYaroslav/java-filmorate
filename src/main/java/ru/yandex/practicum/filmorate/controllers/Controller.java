@@ -10,7 +10,7 @@ public abstract class Controller<T> {
 
     abstract public T update(T t) throws Exception;
 
-    abstract public Collection<T> get() throws Exception;
+    abstract public List<T> get() throws Exception;
 
     protected void validate(T t) throws Exception {}
 }

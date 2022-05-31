@@ -16,6 +16,23 @@ public class UserControllerTest {
     private static final LocalDate BIRTHDAY = LocalDate.of(2000, 1, 1);
 
     @Test
+    public void createTest() throws InvalidUserException {
+        UserController userController = new UserController();
+        User user = User.builder()
+                .login("dolore")
+                .name("Nick Name")
+                .email("mail@mail.ru")
+                .birthday(LocalDate.of(1946,8,2))
+                .build()
+        ;
+
+        userController.add(user);
+        assertEquals(1, userController.get().size());
+        userController.add(user);
+        assertEquals(2, userController.get().size());
+    }
+
+    @Test
     public void addTest() throws InvalidUserException {
         UserController userController = new UserController();
         User user = generateValidUser();

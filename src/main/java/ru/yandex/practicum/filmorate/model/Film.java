@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
+import lombok.NonNull;
 
+import javax.validation.constraints.NotBlank;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -12,9 +14,9 @@ public class Film {
     private String name;
     private String description;
     private LocalDate releaseDate;
-    private Duration duration;
+    private long duration;
 
-    public Film(long id, String name, String description, LocalDate releaseDate, Duration duration) {
+    public Film(long id, String name, String description, LocalDate releaseDate, long duration) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -54,11 +56,11 @@ public class Film {
         this.releaseDate = releaseDate;
     }
 
-    public Duration getDuration() {
+    public long getDuration() {
         return duration;
     }
 
-    public void setDuration(Duration duration) {
+    public void setDuration(long duration) {
         this.duration = duration;
     }
 
