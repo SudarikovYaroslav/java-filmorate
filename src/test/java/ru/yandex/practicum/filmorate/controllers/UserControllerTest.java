@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.model.Constants.*;
 
 public class UserControllerTest {
     private static final long ID = 1L;
@@ -53,7 +54,7 @@ public class UserControllerTest {
         for (int i = 0; i < 3; i++) {
             userController.update(zeroIdUser);
         }
-        assertEquals(1, userController.get().size());
+        assertEquals(0, userController.get().size());
     }
 
     @Test
@@ -65,7 +66,7 @@ public class UserControllerTest {
                     userController.add(nullUser);
                 }
         );
-        assertEquals(UserController.NULL_USER_LOG, ex.getMessage());
+        assertEquals(NULL_USER_LOG, ex.getMessage());
     }
 
     @Test
@@ -92,7 +93,7 @@ public class UserControllerTest {
                     userController.add(nullEmailUser);
                 }
         );
-        assertEquals(UserController.NULL_FIELDS_LOG, exNullEmail.getMessage());
+        assertEquals(NULL_USER_FIELDS_LOG, exNullEmail.getMessage());
 
         User blankEmailUser = generateValidUser();
         blankEmailUser.setEmail("");
@@ -100,7 +101,7 @@ public class UserControllerTest {
                     userController.add(blankEmailUser);
                 }
         );
-        assertEquals(UserController.BAD_EMAIL_LOG, exBlankEmail.getMessage());
+        assertEquals(BAD_USER_EMAIL_LOG, exBlankEmail.getMessage());
 
         // проверка почты без символа @
         User incorrectFormatEmailUser = generateValidUser();
@@ -109,7 +110,7 @@ public class UserControllerTest {
                     userController.add(incorrectFormatEmailUser);
                 }
         );
-        assertEquals(UserController.BAD_EMAIL_LOG, exIncorrectFormatEmail.getMessage());
+        assertEquals(BAD_USER_EMAIL_LOG, exIncorrectFormatEmail.getMessage());
     }
 
     @Test
@@ -122,7 +123,7 @@ public class UserControllerTest {
                     userController.add(nullLoginUser);
                 }
         );
-        assertEquals(UserController.NULL_FIELDS_LOG, nullLoginUserEx.getMessage());
+        assertEquals(NULL_USER_FIELDS_LOG, nullLoginUserEx.getMessage());
 
         User blankLoginUser = generateValidUser();
         blankLoginUser.setLogin("");
@@ -130,7 +131,7 @@ public class UserControllerTest {
                     userController.add(blankLoginUser);
                 }
         );
-        assertEquals(UserController.BAD_LOGIN_LOG, blankLoginUserEx.getMessage());
+        assertEquals(BAD_USER_LOGIN_LOG, blankLoginUserEx.getMessage());
 
         User spaceContainsLoginUser = generateValidUser();
         spaceContainsLoginUser.setLogin("user invalid login");
@@ -138,7 +139,7 @@ public class UserControllerTest {
                     userController.add(spaceContainsLoginUser);
                 }
         );
-        assertEquals(UserController.BAD_LOGIN_LOG, spaceLoginUserEx.getMessage());
+        assertEquals(BAD_USER_LOGIN_LOG, spaceLoginUserEx.getMessage());
     }
 
     @Test
@@ -167,7 +168,7 @@ public class UserControllerTest {
                     userController.add(userFromTheFuture);
                 }
         );
-        assertEquals(UserController.BAD_BIRTHDAY_LOG, birthdayInFutureEx.getMessage());
+        assertEquals(BAD_USER_BIRTHDAY_LOG, birthdayInFutureEx.getMessage());
 
         User newerBirthUser = generateValidUser();
         newerBirthUser.setBirthday(null);
@@ -175,7 +176,7 @@ public class UserControllerTest {
                     userController.add(newerBirthUser);
                 }
         );
-        assertEquals(UserController.NULL_FIELDS_LOG, neverBirthdayEx.getMessage());
+        assertEquals(NULL_USER_FIELDS_LOG, neverBirthdayEx.getMessage());
     }
 
     private User generateValidUser() {

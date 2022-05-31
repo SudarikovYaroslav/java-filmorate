@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.FilmIdGenerator;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.model.Constants.*;
 
 @SpringBootTest
 public class FilmControllerTest {
@@ -74,7 +75,7 @@ public class FilmControllerTest {
                     filmController.add(nullNameFilm);
                 }
         );
-        assertEquals(FilmController.NULL_FIELDS_LOG, exNullName.getMessage());
+        assertEquals(NULL_FILM_FIELDS_LOG, exNullName.getMessage());
 
         Film blankNameFilm = generateValidFilm();
         blankNameFilm.setName("");
@@ -82,7 +83,7 @@ public class FilmControllerTest {
                     filmController.add(blankNameFilm);
                 }
         );
-        assertEquals(FilmController.BLANK_NAME_LOG, exBlankName.getMessage());
+        assertEquals(BLANK_FILM_NAME_LOG, exBlankName.getMessage());
     }
 
     @Test
@@ -106,7 +107,7 @@ public class FilmControllerTest {
                     filmController.add(tooLongDescriptionFilm);
                 }
         );
-        assertEquals(FilmController.TOO_LONG_DESCRIPTION_LOG, ex.getMessage());
+        assertEquals(LONG_FILM_DESCRIPTION_LOG, ex.getMessage());
 
         Film maxLengthDescriptionFilm = generateValidFilm();
         maxLengthDescriptionFilm.setDescription(generateMaxLengthDescription());
@@ -119,17 +120,17 @@ public class FilmControllerTest {
         FilmController filmController = new FilmController();
         Film firstFilmEver = generateValidFilm();
 
-        firstFilmEver.setReleaseDate(FilmController.FIRST_FILM_BIRTHDAY);
+        firstFilmEver.setReleaseDate(FIRST_FILM_BIRTHDAY);
         filmController.add(firstFilmEver);
         assertNotEquals(0, filmController.get().size());
 
         Film beforeEverFilm = generateValidFilm();
-        beforeEverFilm.setReleaseDate(FilmController.FIRST_FILM_BIRTHDAY.minusDays(1));
+        beforeEverFilm.setReleaseDate(FIRST_FILM_BIRTHDAY.minusDays(1));
         InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
                     filmController.add(beforeEverFilm);
                 }
         );
-        assertEquals(FilmController.BAD_RELEASE_DATE_LOG, ex.getMessage());
+        assertEquals(BAD_FILM_RELEASE_DATE_LOG, ex.getMessage());
     }
 
     @Test
@@ -147,7 +148,7 @@ public class FilmControllerTest {
                     filmController.add(negativeDurationFilm);
                 }
         );
-        assertEquals(FilmController.NEGATIVE_DURATION_LOG, ex.getMessage());
+        assertEquals(NEGATIVE_FILM_DURATION_LOG, ex.getMessage());
     }
 
     @Test
@@ -159,7 +160,7 @@ public class FilmControllerTest {
                     filmController.add(film);
                 }
         );
-        assertEquals(FilmController.NULL_FILM_LOG, ex.getMessage());
+        assertEquals(NULL_FILM_LOG, ex.getMessage());
     }
 
     /**
@@ -168,7 +169,7 @@ public class FilmControllerTest {
     private String generateTooLongDescription() {
         StringBuilder resultBuilder = new StringBuilder();
 
-        for (int i = 0; i < FilmController.MAX_DESCRIPTION_LENGTH + 1; i++) {
+        for (int i = 0; i < MAX_FILM_DESCRIPTION_LENGTH + 1; i++) {
             resultBuilder.append("1");
         }
         return resultBuilder.toString();
@@ -178,7 +179,7 @@ public class FilmControllerTest {
     private String generateMaxLengthDescription() {
         StringBuilder resultBuilder = new StringBuilder();
 
-        for (int i = 0; i < FilmController.MAX_DESCRIPTION_LENGTH; i++) {
+        for (int i = 0; i < MAX_FILM_DESCRIPTION_LENGTH; i++) {
             resultBuilder.append("1");
         }
         return resultBuilder.toString();

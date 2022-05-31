@@ -1,13 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
-import lombok.NonNull;
 
-import javax.validation.constraints.NotBlank;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Objects;
 
+// Не стал использовать @Data от lombok, потому, что наставник и лектор на вебинаре от ЯП сказали, что из-за неё
+// бывают сложно вылавливаемые ошибки.
 @Builder
 public class Film {
     private long id;
