@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.service.FilmIdGenerator;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static ru.yandex.practicum.filmorate.model.Constants.*;
 
 @SpringBootTest
 public class FilmControllerTest {
@@ -71,19 +70,17 @@ public class FilmControllerTest {
 
         Film nullNameFilm = generateValidFilm();
         nullNameFilm.setName(null);
-        InvalidFilmException exNullName = assertThrows(InvalidFilmException.class, () -> {
+        assertThrows(InvalidFilmException.class, () -> {
                     filmController.add(nullNameFilm);
                 }
         );
-        assertEquals(NULL_FILM_FIELDS_LOG, exNullName.getMessage());
 
         Film blankNameFilm = generateValidFilm();
         blankNameFilm.setName("");
-        InvalidFilmException exBlankName = assertThrows(InvalidFilmException.class, () -> {
+        assertThrows(InvalidFilmException.class, () -> {
                     filmController.add(blankNameFilm);
                 }
         );
-        assertEquals(BLANK_FILM_NAME_LOG, exBlankName.getMessage());
     }
 
     @Test
@@ -103,11 +100,10 @@ public class FilmControllerTest {
         Film tooLongDescriptionFilm = generateValidFilm();
         tooLongDescriptionFilm.setDescription(generateTooLongDescription());
 
-        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+        assertThrows(InvalidFilmException.class, () -> {
                     filmController.add(tooLongDescriptionFilm);
                 }
         );
-        assertEquals(LONG_FILM_DESCRIPTION_LOG, ex.getMessage());
 
         Film maxLengthDescriptionFilm = generateValidFilm();
         maxLengthDescriptionFilm.setDescription(generateMaxLengthDescription());
@@ -120,17 +116,16 @@ public class FilmControllerTest {
         FilmController filmController = new FilmController();
         Film firstFilmEver = generateValidFilm();
 
-        firstFilmEver.setReleaseDate(FIRST_FILM_BIRTHDAY);
+        firstFilmEver.setReleaseDate(FilmController.FIRST_FILM_BIRTHDAY);
         filmController.add(firstFilmEver);
         assertNotEquals(0, filmController.get().size());
 
         Film beforeEverFilm = generateValidFilm();
-        beforeEverFilm.setReleaseDate(FIRST_FILM_BIRTHDAY.minusDays(1));
-        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+        beforeEverFilm.setReleaseDate(FilmController.FIRST_FILM_BIRTHDAY.minusDays(1));
+        assertThrows(InvalidFilmException.class, () -> {
                     filmController.add(beforeEverFilm);
                 }
         );
-        assertEquals(BAD_FILM_RELEASE_DATE_LOG, ex.getMessage());
     }
 
     @Test
@@ -144,11 +139,10 @@ public class FilmControllerTest {
 
         Film negativeDurationFilm = generateValidFilm();
         negativeDurationFilm.setDuration(-1);
-        InvalidFilmException ex = assertThrows(InvalidFilmException.class, () -> {
+        assertThrows(InvalidFilmException.class, () -> {
                     filmController.add(negativeDurationFilm);
                 }
         );
-        assertEquals(NEGATIVE_FILM_DURATION_LOG, ex.getMessage());
     }
 
     @Test
@@ -156,11 +150,10 @@ public class FilmControllerTest {
         Film film = null;
         FilmController filmController = new FilmController();
 
-        NullPointerException ex = assertThrows(NullPointerException.class, () -> {
+        assertThrows(IllegalStateException.class, () -> {
                     filmController.add(film);
                 }
         );
-        assertEquals(NULL_FILM_LOG, ex.getMessage());
     }
 
     /**
@@ -169,7 +162,7 @@ public class FilmControllerTest {
     private String generateTooLongDescription() {
         StringBuilder resultBuilder = new StringBuilder();
 
-        for (int i = 0; i < MAX_FILM_DESCRIPTION_LENGTH + 1; i++) {
+        for (int i = 0; i < FilmController.MAX_FILM_DESCRIPTION_LENGTH + 1; i++) {
             resultBuilder.append("1");
         }
         return resultBuilder.toString();
@@ -179,7 +172,7 @@ public class FilmControllerTest {
     private String generateMaxLengthDescription() {
         StringBuilder resultBuilder = new StringBuilder();
 
-        for (int i = 0; i < MAX_FILM_DESCRIPTION_LENGTH; i++) {
+        for (int i = 0; i < FilmController.MAX_FILM_DESCRIPTION_LENGTH; i++) {
             resultBuilder.append("1");
         }
         return resultBuilder.toString();

@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static ru.yandex.practicum.filmorate.model.Constants.*;
 
 public class UserControllerTest {
     private static final long ID = 1L;
@@ -62,11 +61,10 @@ public class UserControllerTest {
         UserController userController = new UserController();
         User nullUser = null;
 
-        NullPointerException ex = assertThrows(NullPointerException.class, () -> {
+        assertThrows(IllegalStateException.class, () -> {
                     userController.add(nullUser);
                 }
         );
-        assertEquals(NULL_USER_LOG, ex.getMessage());
     }
 
     @Test
@@ -86,71 +84,87 @@ public class UserControllerTest {
 
         userController.add(validUser);
         assertNotEquals(0, userController.get().size());
+    }
 
-        User nullEmailUser = generateValidUser();
-        nullEmailUser.setEmail(null);
-        NullPointerException exNullEmail = assertThrows(NullPointerException.class, () -> {
-                    userController.add(nullEmailUser);
-                }
-        );
-        assertEquals(NULL_USER_FIELDS_LOG, exNullEmail.getMessage());
-
-        User blankEmailUser = generateValidUser();
-        blankEmailUser.setEmail("");
-        InvalidUserException exBlankEmail = assertThrows(InvalidUserException.class, () -> {
-                    userController.add(blankEmailUser);
-                }
-        );
-        assertEquals(BAD_USER_EMAIL_LOG, exBlankEmail.getMessage());
-
+    @Test
+    public void incorrectEmailValidationTest() {
         // проверка почты без символа @
+        UserController userController = new UserController();
         User incorrectFormatEmailUser = generateValidUser();
         incorrectFormatEmailUser.setEmail("usermail.ru");
-        InvalidUserException exIncorrectFormatEmail = assertThrows(InvalidUserException.class, () -> {
+        assertThrows(InvalidUserException.class, () -> {
                     userController.add(incorrectFormatEmailUser);
                 }
         );
-        assertEquals(BAD_USER_EMAIL_LOG, exIncorrectFormatEmail.getMessage());
     }
 
     @Test
-    public void loginValidationTest() {
+    public void blankEmailValidationTest() {
         UserController userController = new UserController();
+        User blankEmailUser = generateValidUser();
+        blankEmailUser.setEmail("");
+        assertThrows(InvalidUserException.class, () -> {
+                    userController.add(blankEmailUser);
+                }
+        );
+    }
 
+    @Test
+    public void nullEmailValidationTest() {
+        UserController userController = new UserController();
+        User nullEmailUser = generateValidUser();
+        nullEmailUser.setEmail(null);
+        assertThrows(NullPointerException.class, () -> {
+                    userController.add(nullEmailUser);
+                }
+        );
+    }
+
+    @Test
+    public void loginNullValidationTest() {
+        UserController userController = new UserController();
         User nullLoginUser = generateValidUser();
         nullLoginUser.setLogin(null);
-        NullPointerException nullLoginUserEx = assertThrows(NullPointerException.class, () -> {
+        assertThrows(NullPointerException.class, () -> {
                     userController.add(nullLoginUser);
                 }
         );
-        assertEquals(NULL_USER_FIELDS_LOG, nullLoginUserEx.getMessage());
-
-        User blankLoginUser = generateValidUser();
-        blankLoginUser.setLogin("");
-        InvalidUserException blankLoginUserEx = assertThrows(InvalidUserException.class, () -> {
-                    userController.add(blankLoginUser);
-                }
-        );
-        assertEquals(BAD_USER_LOGIN_LOG, blankLoginUserEx.getMessage());
-
-        User spaceContainsLoginUser = generateValidUser();
-        spaceContainsLoginUser.setLogin("user invalid login");
-        InvalidUserException spaceLoginUserEx = assertThrows(InvalidUserException.class, () -> {
-                    userController.add(spaceContainsLoginUser);
-                }
-        );
-        assertEquals(BAD_USER_LOGIN_LOG, spaceLoginUserEx.getMessage());
     }
 
     @Test
-    public void nameValidationTest() throws InvalidUserException {
+    public void loginWithSpaseValidationTest() {
         UserController userController = new UserController();
+        User spaceContainsLoginUser = generateValidUser();
+        spaceContainsLoginUser.setLogin("user invalid login");
+        assertThrows(InvalidUserException.class, () -> {
+                    userController.add(spaceContainsLoginUser);
+                }
+        );
+    }
 
+    @Test
+    public void loginBlankValidationTest() {
+        UserController userController = new UserController();
+        User blankLoginUser = generateValidUser();
+        blankLoginUser.setLogin("");
+        assertThrows(InvalidUserException.class, () -> {
+                    userController.add(blankLoginUser);
+                }
+        );
+    }
+
+    @Test
+    public void nameNullValidationTest() throws InvalidUserException {
+        UserController userController = new UserController();
         User userNullName = generateValidUser();
         userNullName.setName(null);
         userController.add(userNullName);
         assertEquals(LOGIN, userNullName.getName());
+    }
 
+    @Test
+    public void nameBlankValidationTest() throws InvalidUserException {
+        UserController userController = new UserController();
         User userBlankName = generateValidUser();
         userBlankName.setName("");
         userController.add(userBlankName);
@@ -158,25 +172,26 @@ public class UserControllerTest {
     }
 
     @Test
-    public void birthdayValidationTest() {
+    public void birthdayInFutureValidationTest() {
         UserController userController = new UserController();
-
         User userFromTheFuture = generateValidUser();
         userFromTheFuture.setBirthday(LocalDate.now().plusYears(1));
 
-        InvalidUserException birthdayInFutureEx = assertThrows(InvalidUserException.class, () -> {
+        assertThrows(InvalidUserException.class, () -> {
                     userController.add(userFromTheFuture);
                 }
         );
-        assertEquals(BAD_USER_BIRTHDAY_LOG, birthdayInFutureEx.getMessage());
+    }
 
+    @Test
+    public void birthdayNullValidationTest() {
+        UserController userController = new UserController();
         User newerBirthUser = generateValidUser();
         newerBirthUser.setBirthday(null);
-        NullPointerException neverBirthdayEx = assertThrows(NullPointerException.class, () -> {
+        assertThrows(NullPointerException.class, () -> {
                     userController.add(newerBirthUser);
                 }
         );
-        assertEquals(NULL_USER_FIELDS_LOG, neverBirthdayEx.getMessage());
     }
 
     private User generateValidUser() {

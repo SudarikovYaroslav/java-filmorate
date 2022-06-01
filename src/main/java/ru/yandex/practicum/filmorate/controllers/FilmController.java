@@ -6,83 +6,96 @@ import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmIdGenerator;
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static ru.yandex.practicum.filmorate.model.Constants.*;
-
+@Slf4j
 @RestController
 @RequestMapping("/films")
-@Slf4j
-public class FilmController extends Controller<Film> {
+public class FilmController {
+    public static final long MAX_FILM_DESCRIPTION_LENGTH = 200L;
+    public static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
+
+    Map<Long, Film> films = new HashMap<>();
 
     @PostMapping
     public Film add(@RequestBody Film film) throws InvalidFilmException {
-        isNull(film);
+        validateNotNull(film);
         validate(film);
         film.setId(FilmIdGenerator.generate());
-        log.debug(ASSIGNED_FILM_ID_LOG + film.getId());
-        data.put(film.getId(), film);
+        log.debug("Фильму присвоен id: " + film.getId());
+        films.put(film.getId(), film);
         log.debug("Добавлен фильм: " + film.getName());
         return film;
     }
 
     @PutMapping
     public Film update(@RequestBody Film film) throws InvalidFilmException {
-        isNull(film);
+        validateNotNull(film);
         validate(film);
 
-        if (data.containsKey(film.getId())) {
-            data.put(film.getId(), film);
+        if (films.containsKey(film.getId())) {
+            films.put(film.getId(), film);
             log.debug("Обновлён фильм: " + film.getName());
         } else {
-            log.warn(UPDATE_FILM_FAIL_LOG);
-            throw new InvalidFilmException(UPDATE_FILM_FAIL_LOG);
+            String message = "Попытка обновить несуществующий фильм";
+            log.warn(message);
+            throw new InvalidFilmException(message);
         }
         return film;
     }
 
     @GetMapping
     public List<Film> get() {
-        log.debug("Текущее количество фильмов: " + data.size());
-        return new ArrayList<>(data.values());
+        log.debug("Текущее количество фильмов: " + films.size());
+        return new ArrayList<>(films.values());
     }
 
-    @Override
     protected void validate(Film film) throws InvalidFilmException {
         if (film.getName() == null) {
-            log.warn(NULL_FILM_FIELDS_LOG);
-            throw new InvalidFilmException(NULL_FILM_FIELDS_LOG);
+            String message = "Объект Film некорректно инициализирован, есть null поля!";
+            log.warn(message);
+            throw new InvalidFilmException(message);
         }
 
         if (film.getName().isBlank()) {
-            log.warn(BLANK_FILM_NAME_LOG);
-            throw  new InvalidFilmException(BLANK_FILM_NAME_LOG);
+            String message = "Пустое имя фильма при инициализации";
+            log.warn(message);
+            throw  new InvalidFilmException(message);
         }
 
         if (film.getDescription() != null && film.getDescription().length() > MAX_FILM_DESCRIPTION_LENGTH) {
-            log.warn(LONG_FILM_DESCRIPTION_LOG);
-            throw new InvalidFilmException(LONG_FILM_DESCRIPTION_LOG);
+            String message = "Описание длиннее " + MAX_FILM_DESCRIPTION_LENGTH;
+            log.warn(message);
+            throw new InvalidFilmException(message);
         }
 
         if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(FIRST_FILM_BIRTHDAY)) {
-            log.warn(BAD_FILM_RELEASE_DATE_LOG);
-            throw new InvalidFilmException(BAD_FILM_RELEASE_DATE_LOG);
+            String message = "Дата релиза раньше ДР кино:" + FIRST_FILM_BIRTHDAY;
+            log.warn(message);
+            throw new InvalidFilmException(message);
         }
 
         if (film.getDuration() < 0) {
-            log.warn(NEGATIVE_FILM_DURATION_LOG);
-            throw new InvalidFilmException(NEGATIVE_FILM_DURATION_LOG);
+            String message = "Отрицательная продолжительность фильма";
+            log.warn(message);
+            throw new InvalidFilmException(message);
         }
 
         if (film.getId() < 0) {
-            log.warn(NEGATIVE_FILM_ID_LOG);
-            throw new InvalidFilmException(NEGATIVE_FILM_ID_LOG);
+            String message = "У фильма отрицательный id";
+            log.warn(message);
+            throw new InvalidFilmException(message);
         }
     }
 
-    private void isNull(Film film) {
-        log.warn(NULL_FILM_LOG);
-        if (film == null) throw new NullPointerException(NULL_FILM_LOG);
+    private void validateNotNull(Film film) {
+        String message = "Передан null film";
+        log.warn(message);
+        if (film == null) throw new IllegalStateException(message);
     }
 }

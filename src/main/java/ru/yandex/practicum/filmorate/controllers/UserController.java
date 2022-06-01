@@ -8,33 +8,35 @@ import ru.yandex.practicum.filmorate.service.UserIdGenerator;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static ru.yandex.practicum.filmorate.model.Constants.*;
-
+@Slf4j
 @RestController
 @RequestMapping("/users")
-@Slf4j
-public class UserController extends Controller<User> {
+public class UserController {
+
+    Map<Long,User> users = new HashMap<>();
 
     @PostMapping
     public User add(@RequestBody User user) throws InvalidUserException {
-        isNull(user);
+        validateNotNull(user);
         validate(user);
         user.setId(UserIdGenerator.generate());
-        log.debug(ASSIGNED_USER_ID_LOG + user.getId());
-        data.put(user.getId(), user);
+        log.debug("Пользователю присвоен id: " + user.getId());
+        users.put(user.getId(), user);
         log.debug("Добавлен пользователь: " + user.getLogin());
         return user;
     }
 
     @PutMapping
     public User update(@RequestBody User user) throws InvalidUserException {
-        isNull(user);
+        validateNotNull(user);
         validate(user);
 
-        if (data.containsKey(user.getId())) {
-            data.put(user.getId(), user);
+        if (users.containsKey(user.getId())) {
+            users.put(user.getId(), user);
             log.debug("Обновлён пользователь: " + user.getLogin());
         }
         return user;
@@ -42,48 +44,53 @@ public class UserController extends Controller<User> {
 
     @GetMapping
     public List<User> get() {
-        log.debug("Текущее количество пользователей: " + data.size());
-        return new ArrayList<>(data.values());
+        log.debug("Текущее количество пользователей: " + users.size());
+        return new ArrayList<>(users.values());
     }
 
-    @Override
     protected void validate(User user) throws InvalidUserException {
         if (user.getEmail() == null
                 || user.getLogin() == null
                 || user.getBirthday() == null
         ) {
-            log.warn(NULL_USER_FIELDS_LOG);
-            throw new NullPointerException(NULL_USER_FIELDS_LOG);
+            String message = "Некорректно инициализирован пользователь, есть null поля";
+            log.warn(message);
+            throw new NullPointerException(message);
         }
 
         if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn(BAD_USER_EMAIL_LOG);
-            throw new InvalidUserException(BAD_USER_EMAIL_LOG);
+            String message = "Некорректный адрес email";
+            log.warn(message);
+            throw new InvalidUserException(message);
         }
 
         if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn(BAD_USER_LOGIN_LOG);
-            throw new InvalidUserException(BAD_USER_LOGIN_LOG);
+            String message = "Логин пустой или содержит пробелы";
+            log.warn(message);
+            throw new InvalidUserException(message);
         }
 
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
-            log.debug(ASSIGNED_USER_NAME_LOG + user.getName());
+            log.debug("Пользователю присвоено имя: " + user.getName());
         }
 
         if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn(BAD_USER_BIRTHDAY_LOG);
-            throw new InvalidUserException(BAD_USER_BIRTHDAY_LOG);
+            String message = "День рождения указан в будущем";
+            log.warn(message);
+            throw new InvalidUserException(message);
         }
 
         if (user.getId() < 0) {
-            log.warn(NEGATIVE_USER_ID_LOG);
-            throw new InvalidUserException(NEGATIVE_USER_ID_LOG);
+            String message = "У пользователя отрицательный id";;
+            log.warn(message);
+            throw new InvalidUserException(message);
         }
     }
 
-    private void isNull(User user) {
-        log.warn(NULL_USER_LOG);
-        if (user == null) throw new NullPointerException(NULL_USER_LOG);
+    private void validateNotNull(User user) {
+        String message = "Передан null user";
+        log.warn(message);
+        if (user == null) throw new IllegalStateException(message);
     }
 }
