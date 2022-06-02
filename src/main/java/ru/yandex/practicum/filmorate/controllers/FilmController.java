@@ -17,8 +17,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    public static final long MAX_FILM_DESCRIPTION_LENGTH = 200L;
-    public static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
+    private static final long MAX_FILM_DESCRIPTION_LENGTH = 200L;
+    private static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
     Map<Long, Film> films = new HashMap<>();
 
@@ -44,7 +44,7 @@ public class FilmController {
         } else {
             String message = "Попытка обновить несуществующий фильм";
             log.warn(message);
-            throw new InvalidFilmException(message);
+            throw new InvalidFilmException(message + " id: " + film.getId());
         }
         return film;
     }
@@ -59,37 +59,37 @@ public class FilmController {
         if (film.getName() == null) {
             String message = "Объект Film некорректно инициализирован, есть null поля!";
             log.warn(message);
-            throw new InvalidFilmException(message);
+            throw new InvalidFilmException(message + " id: " + film.getId());
         }
 
         if (film.getName().isBlank()) {
             String message = "Пустое имя фильма при инициализации";
             log.warn(message);
-            throw  new InvalidFilmException(message);
+            throw  new InvalidFilmException(message + " id: " + film.getId());
         }
 
         if (film.getDescription() != null && film.getDescription().length() > MAX_FILM_DESCRIPTION_LENGTH) {
             String message = "Описание длиннее " + MAX_FILM_DESCRIPTION_LENGTH;
             log.warn(message);
-            throw new InvalidFilmException(message);
+            throw new InvalidFilmException(message + " id: " + film.getId());
         }
 
         if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(FIRST_FILM_BIRTHDAY)) {
             String message = "Дата релиза раньше ДР кино:" + FIRST_FILM_BIRTHDAY;
             log.warn(message);
-            throw new InvalidFilmException(message);
+            throw new InvalidFilmException(message + " id: " + film.getId());
         }
 
         if (film.getDuration() < 0) {
             String message = "Отрицательная продолжительность фильма";
             log.warn(message);
-            throw new InvalidFilmException(message);
+            throw new InvalidFilmException(message + " id: " + film.getId());
         }
 
         if (film.getId() < 0) {
             String message = "У фильма отрицательный id";
             log.warn(message);
-            throw new InvalidFilmException(message);
+            throw new InvalidFilmException(message + " id: " + film.getId());
         }
     }
 
@@ -97,5 +97,13 @@ public class FilmController {
         String message = "Передан null film";
         log.warn(message);
         if (film == null) throw new IllegalStateException(message);
+    }
+
+    public static long getMaxFilmDescriptionLength() {
+        return MAX_FILM_DESCRIPTION_LENGTH;
+    }
+
+    public static LocalDate getFirstFilmBirthday() {
+        return FIRST_FILM_BIRTHDAY;
     }
 }

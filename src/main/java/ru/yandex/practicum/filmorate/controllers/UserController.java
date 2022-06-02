@@ -37,7 +37,7 @@ public class UserController {
 
         if (users.containsKey(user.getId())) {
             users.put(user.getId(), user);
-            log.debug("Обновлён пользователь: " + user.getLogin());
+            log.debug("Обновлён пользователь: " + user.getId());
         }
         return user;
     }
@@ -55,19 +55,19 @@ public class UserController {
         ) {
             String message = "Некорректно инициализирован пользователь, есть null поля";
             log.warn(message);
-            throw new NullPointerException(message);
+            throw new NullPointerException(message + " id: " + user.getId());
         }
 
         if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             String message = "Некорректный адрес email";
             log.warn(message);
-            throw new InvalidUserException(message);
+            throw new InvalidUserException(message + " id: " + user.getId());
         }
 
         if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             String message = "Логин пустой или содержит пробелы";
             log.warn(message);
-            throw new InvalidUserException(message);
+            throw new InvalidUserException(message + " id: " + user.getId());
         }
 
         if (user.getName() == null || user.getName().isBlank()) {
@@ -78,13 +78,13 @@ public class UserController {
         if (user.getBirthday().isAfter(LocalDate.now())) {
             String message = "День рождения указан в будущем";
             log.warn(message);
-            throw new InvalidUserException(message);
+            throw new InvalidUserException(message + " id: " + user.getId());
         }
 
         if (user.getId() < 0) {
             String message = "У пользователя отрицательный id";;
             log.warn(message);
-            throw new InvalidUserException(message);
+            throw new InvalidUserException(message + " id: " + user.getId());
         }
     }
 
