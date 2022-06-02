@@ -53,21 +53,21 @@ public class UserController {
                 || user.getLogin() == null
                 || user.getBirthday() == null
         ) {
-            String message = "Некорректно инициализирован пользователь, есть null поля";
+            String message = "Некорректно инициализирован пользователь, есть null поля id: " + user.getId();
             log.warn(message);
-            throw new NullPointerException(message + " id: " + user.getId());
+            throw new NullPointerException(message);
         }
 
         if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            String message = "Некорректный адрес email";
+            String message = "Некорректный адрес email id: " + user.getId();
             log.warn(message);
-            throw new InvalidUserException(message + " id: " + user.getId());
+            throw new InvalidUserException(message);
         }
 
         if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            String message = "Логин пустой или содержит пробелы";
+            String message = "Логин пустой или содержит пробелы id: " + user.getId();
             log.warn(message);
-            throw new InvalidUserException(message + " id: " + user.getId());
+            throw new InvalidUserException(message);
         }
 
         if (user.getName() == null || user.getName().isBlank()) {
@@ -76,15 +76,15 @@ public class UserController {
         }
 
         if (user.getBirthday().isAfter(LocalDate.now())) {
-            String message = "День рождения указан в будущем";
+            String message = "День рождения указан в будущем id: " + user.getId();
             log.warn(message);
-            throw new InvalidUserException(message + " id: " + user.getId());
+            throw new InvalidUserException(message);
         }
 
         if (user.getId() < 0) {
-            String message = "У пользователя отрицательный id";;
+            String message = "У пользователя отрицательный id. id: " + user.getId();;
             log.warn(message);
-            throw new InvalidUserException(message + " id: " + user.getId());
+            throw new InvalidUserException(message);
         }
     }
 

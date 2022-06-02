@@ -42,9 +42,9 @@ public class FilmController {
             films.put(film.getId(), film);
             log.debug("Обновлён фильм: " + film.getName());
         } else {
-            String message = "Попытка обновить несуществующий фильм";
+            String message = "Попытка обновить несуществующий фильм id: " + film.getId();
             log.warn(message);
-            throw new InvalidFilmException(message + " id: " + film.getId());
+            throw new InvalidFilmException(message);
         }
         return film;
     }
@@ -57,39 +57,39 @@ public class FilmController {
 
     protected void validate(Film film) throws InvalidFilmException {
         if (film.getName() == null) {
-            String message = "Объект Film некорректно инициализирован, есть null поля!";
+            String message = "Объект Film некорректно инициализирован, есть null поля! id: " + film.getId();
             log.warn(message);
-            throw new InvalidFilmException(message + " id: " + film.getId());
+            throw new InvalidFilmException(message);
         }
 
         if (film.getName().isBlank()) {
-            String message = "Пустое имя фильма при инициализации";
+            String message = "Пустое имя фильма при инициализации id: " + film.getId();
             log.warn(message);
-            throw  new InvalidFilmException(message + " id: " + film.getId());
+            throw  new InvalidFilmException(message);
         }
 
         if (film.getDescription() != null && film.getDescription().length() > MAX_FILM_DESCRIPTION_LENGTH) {
-            String message = "Описание длиннее " + MAX_FILM_DESCRIPTION_LENGTH;
+            String message = "Описание длиннее " + MAX_FILM_DESCRIPTION_LENGTH + " id: " + film.getId();
             log.warn(message);
-            throw new InvalidFilmException(message + " id: " + film.getId());
+            throw new InvalidFilmException(message);
         }
 
         if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(FIRST_FILM_BIRTHDAY)) {
-            String message = "Дата релиза раньше ДР кино:" + FIRST_FILM_BIRTHDAY;
+            String message = "Дата релиза раньше ДР кино:" + FIRST_FILM_BIRTHDAY + " id: " + film.getId();
             log.warn(message);
-            throw new InvalidFilmException(message + " id: " + film.getId());
+            throw new InvalidFilmException(message);
         }
 
         if (film.getDuration() < 0) {
-            String message = "Отрицательная продолжительность фильма";
+            String message = "Отрицательная продолжительность фильма  id: " + film.getId();
             log.warn(message);
-            throw new InvalidFilmException(message + " id: " + film.getId());
+            throw new InvalidFilmException(message);
         }
 
         if (film.getId() < 0) {
-            String message = "У фильма отрицательный id";
+            String message = "У фильма отрицательный id. id: " + film.getId();
             log.warn(message);
-            throw new InvalidFilmException(message + " id: " + film.getId());
+            throw new InvalidFilmException(message);
         }
     }
 
