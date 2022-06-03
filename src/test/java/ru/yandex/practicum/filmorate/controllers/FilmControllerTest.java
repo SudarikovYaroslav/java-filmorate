@@ -116,12 +116,12 @@ public class FilmControllerTest {
         FilmController filmController = new FilmController();
         Film firstFilmEver = generateValidFilm();
 
-        firstFilmEver.setReleaseDate(FilmController.getFirstFilmBirthday());
+        firstFilmEver.setReleaseDate(FilmController.FIRST_FILM_BIRTHDAY);
         filmController.add(firstFilmEver);
         assertNotEquals(0, filmController.get().size());
 
         Film beforeEverFilm = generateValidFilm();
-        beforeEverFilm.setReleaseDate(FilmController.getFirstFilmBirthday().minusDays(1));
+        beforeEverFilm.setReleaseDate(FilmController.FIRST_FILM_BIRTHDAY.minusDays(1));
         assertThrows(InvalidFilmException.class, () -> {
                     filmController.add(beforeEverFilm);
                 }
@@ -162,7 +162,7 @@ public class FilmControllerTest {
     private String generateTooLongDescription() {
         StringBuilder resultBuilder = new StringBuilder();
 
-        for (int i = 0; i < FilmController.getMaxFilmDescriptionLength() + 1; i++) {
+        for (int i = 0; i < FilmController.MAX_FILM_DESCRIPTION_LENGTH + 1; i++) {
             resultBuilder.append("1");
         }
         return resultBuilder.toString();
@@ -172,7 +172,7 @@ public class FilmControllerTest {
     private String generateMaxLengthDescription() {
         StringBuilder resultBuilder = new StringBuilder();
 
-        for (int i = 0; i < FilmController.getMaxFilmDescriptionLength(); i++) {
+        for (int i = 0; i < FilmController.MAX_FILM_DESCRIPTION_LENGTH; i++) {
             resultBuilder.append("1");
         }
         return resultBuilder.toString();

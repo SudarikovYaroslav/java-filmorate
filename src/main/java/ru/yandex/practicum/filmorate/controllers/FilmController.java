@@ -17,10 +17,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private static final long MAX_FILM_DESCRIPTION_LENGTH = 200L;
-    private static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
+    public static final long MAX_FILM_DESCRIPTION_LENGTH = 200L;
+    public static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
-    Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
 
     @PostMapping
     public Film add(@RequestBody Film film) throws InvalidFilmException {
@@ -97,13 +97,5 @@ public class FilmController {
         String message = "Передан null film";
         log.warn(message);
         if (film == null) throw new IllegalStateException(message);
-    }
-
-    public static long getMaxFilmDescriptionLength() {
-        return MAX_FILM_DESCRIPTION_LENGTH;
-    }
-
-    public static LocalDate getFirstFilmBirthday() {
-        return FIRST_FILM_BIRTHDAY;
     }
 }
