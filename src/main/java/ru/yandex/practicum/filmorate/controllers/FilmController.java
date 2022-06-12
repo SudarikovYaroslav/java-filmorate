@@ -42,6 +42,21 @@ public class FilmController {
         return filmService.get();
     }
 
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable long id, @PathVariable long userId) {
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
+        filmService.deleteLike(id, userId);
+    }
+    
+    @GetMapping("/popular?count={count}")
+    public List<Film> getTopFilms(@PathVariable Integer count) {
+        return filmService.getTopFilms(count);
+    }
+
     private void validate(Film film) throws InvalidFilmException {
         validateNotNull(film);
 
