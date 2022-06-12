@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
 
@@ -12,20 +12,25 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
 
-    private final FilmStorage filmStorage = new InMemoryFilmStorage();
+    private final FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @PostMapping
     public Film add(@RequestBody Film film) throws InvalidFilmException {
-        return filmStorage.add(film);
+        return filmService.add(film);
     }
 
     @PutMapping
     public Film update(@RequestBody Film film) throws InvalidFilmException {
-        return filmStorage.update(film);
+        return filmService.update(film);
     }
 
     @GetMapping
     public List<Film> get() {
-        return filmStorage.get();
+        return filmService.get();
     }
 }
