@@ -16,15 +16,15 @@ public class Film {
     private long duration;
     private final Set<Long> likes;
 
-    public void addLike(User user) {
-        likes.add(user.getId());
+    public void addLike(long userId) {
+        likes.add(userId);
     }
 
-    public void deleteLike(User user) {
-        likes.remove(user.getId());
+    public void deleteLike(long userId) {
+        likes.remove(userId);
     }
 
-    public int likes() {
+    public int likesNumber() {
         return likes.size();
     }
 }

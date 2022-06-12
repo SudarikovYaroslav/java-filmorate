@@ -12,4 +12,6 @@ public interface FilmStorage {
     Film update(Film film) throws InvalidFilmException;
 
     List<Film> get();
+
+    Film getFilm(long id);
 }

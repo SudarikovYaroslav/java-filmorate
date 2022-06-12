@@ -4,17 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class FilmService {
-    private static final String NULL_VALUE_MESSAGE = "передано null значение";
-    private static final int TOP_FILMS_COUNT = 10;
+    private static final int TOP_FILMS_DEFAULT_COUNT = 10;
 
     private final FilmStorage filmStorage;
 
@@ -35,21 +32,24 @@ public class FilmService {
         return filmStorage.get();
     }
 
-    public void addLike(User user, Film film) {
-        if (user == null || film == null) throw new IllegalArgumentException(NULL_VALUE_MESSAGE);
-        film.addLike(user);
+    public void addLike(long filmId, long userId) {
+        filmStorage.getFilm(filmId).addLike(userId);
     }
 
-    public void deleteLike(User user, Film film) {
-        if (user == null || film == null) throw new IllegalArgumentException(NULL_VALUE_MESSAGE);
-        film.deleteLike(user);
+    public void deleteLike(long filmId, long userId) {
+        filmStorage.getFilm(filmId).deleteLike(userId);
     }
 
-    public List<Film> getTopFilms() {
+    public List<Film> getTopFilms(Integer count) {
         List<Film> result = new ArrayList<>(filmStorage.get());
-        result.sort(Comparator.comparingInt(Film::likes));
+        result.sort((f1, f2) -> f2.likesNumber() - f1.likesNumber());
 
-        if (result.size() <= TOP_FILMS_COUNT) return result;
-        return result.subList(0, TOP_FILMS_COUNT);
+        if (count == null || count == 0) {
+            if (result.size() <= TOP_FILMS_DEFAULT_COUNT) return result;
+            return result.subList(0, TOP_FILMS_DEFAULT_COUNT);
+        } else {
+            if (result.size() <= count) return result;
+            return result.subList(0, count);
+        }
     }
 }
