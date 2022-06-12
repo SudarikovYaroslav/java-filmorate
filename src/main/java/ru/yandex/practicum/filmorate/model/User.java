@@ -19,11 +19,11 @@ public class User {
     private long id;
     private Set<Long> friends;
 
-    public void addFriend(User user) {
-        friends.add(user.getId());
+    public void addFriend(long id) {
+        friends.add(id);
     }
 
-    public void deleteFriend(User user) {
-        friends.remove(user.getId());
+    public void deleteFriend(long id) {
+        friends.remove(id);
     }
 }

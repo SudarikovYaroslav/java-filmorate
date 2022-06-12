@@ -41,4 +41,9 @@ public class InMemoryUserStorage implements UserStorage {
         log.debug("Текущее количество пользователей: " + users.size());
         return new ArrayList<>(users.values());
     }
+
+    @Override
+    public User getUser(long id) {
+        return users.get(id);
+    }
 }

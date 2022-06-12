@@ -11,4 +11,6 @@ public interface UserStorage {
     User update(User user) throws InvalidUserException;
 
     List<User> get();
+
+    User getUser(long id);
 }

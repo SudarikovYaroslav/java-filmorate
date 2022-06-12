@@ -8,11 +8,10 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
-    private static final String NULL_USER_MESSAGE = "передан null пользователь";
-
     private final UserStorage userStorage;
 
     @Autowired
@@ -32,26 +31,34 @@ public class UserService {
         return userStorage.get();
     }
 
-    public void addFriend(User user1, User user2) {
-        if (user1 == null || user2 == null) throw new IllegalArgumentException(NULL_USER_MESSAGE);
-        user1.addFriend(user2);
-        user2.addFriend(user1);
+    public void addFriend(long user1Id, long user2Id) {
+        userStorage.getUser(user1Id).addFriend(user2Id);
+        userStorage.getUser(user2Id).addFriend(user1Id);
     }
 
-    public void deleteFriend(User user1, User user2) {
-        if (user1 == null || user2 == null) throw new IllegalArgumentException(NULL_USER_MESSAGE);
-        user1.deleteFriend(user2);
-        user2.deleteFriend(user1);
+    public void deleteFriend(long user1Id, long user2Id) {
+        userStorage.getUser(user1Id).deleteFriend(user2Id);
+        userStorage.getUser(user2Id).deleteFriend(user1Id);
     }
 
-    public List<Long> getCommonFriends(User user1, User user2) {
-        if (user1 == null || user2 == null) throw new IllegalArgumentException(NULL_USER_MESSAGE);
-        List<Long> commonFriends = new ArrayList<>();
+    public List<User> getUserFriends(long id) {
+        List<User> result = new ArrayList<>();
 
-        for (Long id : user1.getFriends()) {
-            if (user2.getFriends().contains(id)) commonFriends.add(id);
+        for (long friendId : userStorage.getUser(id).getFriends()) {
+            result.add(userStorage.getUser(friendId));
         }
 
+        return result;
+    }
+
+    public List<User> getCommonFriends(long user1Id, long user2Id) {
+        List<User> commonFriends = new ArrayList<>();
+        Set<Long> users1FriendsId = userStorage.getUser(user1Id).getFriends();
+        Set<Long> users2FriendsId = userStorage.getUser(user2Id).getFriends();
+
+        for (Long id : users1FriendsId) {
+            if (users2FriendsId.contains(id)) commonFriends.add(userStorage.getUser(id));
+        }
         return commonFriends;
     }
 }
