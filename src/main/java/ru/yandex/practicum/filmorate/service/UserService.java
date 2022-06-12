@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -23,7 +24,7 @@ public class UserService {
         return userStorage.add(user);
     }
 
-    public User update(User user) throws InvalidUserException {
+    public User update(User user) throws InvalidUserException, UserNotFoundException {
         return userStorage.update(user);
     }
 
@@ -31,17 +32,17 @@ public class UserService {
         return userStorage.get();
     }
 
-    public void addFriend(long user1Id, long user2Id) {
+    public void addFriend(long user1Id, long user2Id) throws UserNotFoundException {
         userStorage.getUser(user1Id).addFriend(user2Id);
         userStorage.getUser(user2Id).addFriend(user1Id);
     }
 
-    public void deleteFriend(long user1Id, long user2Id) {
+    public void deleteFriend(long user1Id, long user2Id) throws UserNotFoundException {
         userStorage.getUser(user1Id).deleteFriend(user2Id);
         userStorage.getUser(user2Id).deleteFriend(user1Id);
     }
 
-    public List<User> getUserFriends(long id) {
+    public List<User> getUserFriends(long id) throws UserNotFoundException {
         List<User> result = new ArrayList<>();
 
         for (long friendId : userStorage.getUser(id).getFriends()) {
@@ -51,7 +52,7 @@ public class UserService {
         return result;
     }
 
-    public List<User> getCommonFriends(long user1Id, long user2Id) {
+    public List<User> getCommonFriends(long user1Id, long user2Id) throws UserNotFoundException {
         List<User> commonFriends = new ArrayList<>();
         Set<Long> users1FriendsId = userStorage.getUser(user1Id).getFriends();
         Set<Long> users2FriendsId = userStorage.getUser(user2Id).getFriends();

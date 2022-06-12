@@ -2,8 +2,11 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
+import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -32,7 +35,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) throws InvalidFilmException {
+    public Film update(@RequestBody Film film) throws InvalidFilmException, FilmNotFoundException {
         validate(film);
         return filmService.update(film);
     }
@@ -43,18 +46,36 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable long id, @PathVariable long userId) {
+    public void addLike(@PathVariable long id, @PathVariable long userId) throws FilmNotFoundException {
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
+    public void deleteLike(@PathVariable long id, @PathVariable long userId) throws FilmNotFoundException {
         filmService.deleteLike(id, userId);
     }
-    
+
     @GetMapping("/popular?count={count}")
     public List<Film> getTopFilms(@PathVariable Integer count) {
         return filmService.getTopFilms(count);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handle(InvalidFilmException e) {
+        return new ErrorResponse("Film validation error", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handle(FilmNotFoundException e) {
+        return new ErrorResponse("Not found error", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handle(Exception e) {
+        return new ErrorResponse("Internal server error", e.getMessage());
     }
 
     private void validate(Film film) throws InvalidFilmException {
