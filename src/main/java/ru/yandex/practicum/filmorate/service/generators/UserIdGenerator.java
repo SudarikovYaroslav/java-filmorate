@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.generators;
 
 public class UserIdGenerator {
     private static long id = 1;

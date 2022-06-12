@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserIdGenerator;
+import ru.yandex.practicum.filmorate.service.generators.UserIdGenerator;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

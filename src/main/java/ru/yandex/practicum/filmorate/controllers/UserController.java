@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.List;
 
@@ -14,20 +14,25 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserStorage userStorage = new InMemoryUserStorage();
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
     public User add(@RequestBody User user) throws InvalidUserException {
-        return userStorage.add(user);
+        return userService.add(user);
     }
 
     @PutMapping
     public User update(@RequestBody User user) throws InvalidUserException {
-        return userStorage.update(user);
+        return userService.update(user);
     }
 
     @GetMapping
     public List<User> get() {
-       return userStorage.get();
+       return userService.get();
     }
 }
