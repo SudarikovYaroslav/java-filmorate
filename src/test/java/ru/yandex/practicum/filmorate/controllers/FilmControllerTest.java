@@ -1,10 +1,14 @@
 package ru.yandex.practicum.filmorate.controllers;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.generators.FilmIdGenerator;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
 
@@ -16,11 +20,15 @@ public class FilmControllerTest {
     private static final String DESCRIPTION = "Test description";
     private static final LocalDate RELEASE_DATE = LocalDate.of(2000, 1, 1);
     private static final long DURATION = 120L;
+    private static FilmController filmController;
+
+    @BeforeEach
+    public void preparation() {
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage()));
+    }
 
     @Test
     public void addTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
-
         Film film1 = generateValidFilm();
         film1.setId(0);
         film1.setName("Film one");
@@ -41,8 +49,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void updateTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
+    public void updateTest() throws InvalidFilmException, FilmNotFoundException {
         Film goalFilm = generateValidFilm();
         filmController.add(goalFilm);
 
@@ -64,7 +71,6 @@ public class FilmControllerTest {
     @Test
     public void nameValidationTest() throws InvalidFilmException {
         Film film = generateValidFilm();
-        FilmController filmController = new FilmController();
         filmController.add(film);
         assertNotEquals(0, filmController.get().size());
 
@@ -85,8 +91,6 @@ public class FilmControllerTest {
 
     @Test
     public void filmIdInvalidTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
-
         Film invalidIdFilm = generateValidFilm();
         invalidIdFilm.setId(0);
         filmController.add(invalidIdFilm);
@@ -95,8 +99,6 @@ public class FilmControllerTest {
 
     @Test
     public void filmDescriptionValidationTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
-
         Film tooLongDescriptionFilm = generateValidFilm();
         tooLongDescriptionFilm.setDescription(generateTooLongDescription());
 
@@ -113,7 +115,6 @@ public class FilmControllerTest {
 
     @Test
     public void releaseValidationTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
         Film firstFilmEver = generateValidFilm();
 
         firstFilmEver.setReleaseDate(FilmController.FIRST_FILM_BIRTHDAY);
@@ -130,7 +131,6 @@ public class FilmControllerTest {
 
     @Test
     public void durationValidationTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
         Film zeroDurationFilm = generateValidFilm();
         zeroDurationFilm.setDuration(0);
 
@@ -148,8 +148,6 @@ public class FilmControllerTest {
     @Test
     public void addNullFilmTest() {
         Film film = null;
-        FilmController filmController = new FilmController();
-
         assertThrows(IllegalStateException.class, () -> {
                     filmController.add(film);
                 }
