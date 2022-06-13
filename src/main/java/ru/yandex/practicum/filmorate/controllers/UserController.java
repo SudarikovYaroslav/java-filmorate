@@ -115,11 +115,12 @@ public class UserController {
             throw new InvalidUserException(message);
         }
 
-        if (user.getId() < 0) {
+        // из-за условия в тесте user update unknown вместо 404 результат 400 на id=-1
+        /*if (user.getId() < 0) {
             String message = "У пользователя отрицательный id. id: " + user.getId();;
             log.warn(message);
             throw new InvalidUserException(message);
-        }
+        }*/
     }
 
     private void validateNotNull(User user) {
