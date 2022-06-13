@@ -123,8 +123,10 @@ public class UserController {
     }
 
     private void validateNotNull(User user) {
-        String message = "Передан null user";
-        log.warn(message);
-        if (user == null) throw new IllegalStateException(message);
+        if (user == null) {
+            String message = "Передан null user";
+            log.warn(message);
+            throw new IllegalStateException(message);
+        }
     }
 }

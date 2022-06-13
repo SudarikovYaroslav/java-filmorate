@@ -9,11 +9,11 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserControllerTest {
-    private static final long ID = 1L;
     private static final String EMAIL = "user@mail.ru";
     private static final String LOGIN = "user";
     private static final String NAME = "Username";
@@ -185,9 +185,104 @@ public class UserControllerTest {
         );
     }
 
+    @Test
+    public void addFriendTest() throws InvalidUserException, UserNotFoundException {
+        User user1 = generateValidUser();
+        user1.setName("user1");
+        user1.setLogin("user1");
+
+        User user2 = generateValidUser();
+        user2.setName("user2");
+        user2.setLogin("user2");
+
+        userController.add(user1);
+        userController.add(user2);
+        long user1Id = user1.getId();
+        long user2Id = user2.getId();
+        userController.addFriend(user1Id, user2Id);
+
+        assertTrue(user1.getFriends().contains(user2Id));
+        assertTrue(user2.getFriends().contains(user1Id));
+    }
+
+    @Test
+    public void deleteFriedTest() throws InvalidUserException, UserNotFoundException {
+        User user1 = generateValidUser();
+        user1.setName("user1");
+        user1.setLogin("user1");
+
+        User user2 = generateValidUser();
+        user2.setName("user2");
+        user2.setLogin("user2");
+
+        userController.add(user1);
+        userController.add(user2);
+        long user1Id = user1.getId();
+        long user2Id = user2.getId();
+        userController.addFriend(user1Id, user2Id);
+
+        userController.deleteFriend(user1Id, user2Id);
+        assertEquals(0, user1.getFriends().size());
+        assertEquals(0, user2.getFriends().size());
+    }
+
+    @Test
+    public void getUserFriendsTest() throws InvalidUserException, UserNotFoundException {
+        User user1 = generateValidUser();
+        user1.setName("user1");
+        user1.setLogin("user1");
+
+        User user2 = generateValidUser();
+        user2.setName("user2");
+        user2.setLogin("user2");
+
+        User user3 = generateValidUser();
+        user3.setName("user3");
+        user3.setLogin("user3");
+
+        userController.add(user1);
+        userController.add(user2);
+        userController.add(user3);
+        long user1Id = user1.getId();
+        long user2Id = user2.getId();
+        long user3Id = user3.getId();
+
+        userController.addFriend(user1Id, user2Id);
+        userController.addFriend(user1Id, user3Id);
+
+        assertTrue(userController.getUserFriends(user1Id).contains(user2));
+        assertTrue(userController.getUserFriends(user1Id).contains(user3));
+    }
+
+    @Test
+    public void getCommonFriendsTest() throws InvalidUserException, UserNotFoundException {
+        User user1 = generateValidUser();
+        user1.setName("user1");
+        user1.setLogin("user1");
+
+        User user2 = generateValidUser();
+        user2.setName("user2");
+        user2.setLogin("user2");
+
+        User commonFriend = generateValidUser();
+        commonFriend.setName("commonFriend");
+        commonFriend.setLogin("commonFriend");
+
+        userController.add(user1);
+        userController.add(user2);
+        userController.add(commonFriend);
+        long user1Id = user1.getId();
+        long user2Id = user2.getId();
+        long commonFriendId = commonFriend.getId();
+
+        userController.addFriend(user1Id, commonFriendId);
+        userController.addFriend(user2Id,commonFriendId);
+
+        assertTrue(userController.getCommonFriends(user1Id, user2Id).contains(commonFriend));
+    }
+
     private User generateValidUser() {
         return User.builder()
-                .id(ID)
                 .email(EMAIL)
                 .login(LOGIN)
                 .name(NAME)

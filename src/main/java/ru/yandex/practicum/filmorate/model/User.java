@@ -17,7 +17,7 @@ public class User {
     private String name;
     private LocalDate birthday;
     private long id;
-    private Set<Long> friends = new HashSet<>();
+    private final Set<Long> friends = new HashSet<>();
 
     public void addFriend(long id) {
         friends.add(id);
