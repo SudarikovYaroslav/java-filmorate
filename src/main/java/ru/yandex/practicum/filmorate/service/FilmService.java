@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 public class FilmService {
-    private static final int TOP_FILMS_DEFAULT_COUNT = 10;
+    public static final int TOP_FILMS_DEFAULT_COUNT = 10;
 
     private final FilmStorage filmStorage;
 

@@ -23,7 +23,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         film.setId(FilmIdGenerator.generate());
         log.debug("Фильму присвоен id: " + film.getId());
         films.put(film.getId(), film);
-        log.debug("Добавлен фильм: " + film.getName());
+        log.debug("Добавлен фильм: " + film.getName() + " id: " + film.getId());
         return film;
     }
 

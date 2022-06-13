@@ -119,8 +119,10 @@ public class FilmController {
     }
 
     private void validateNotNull(Film film) {
-        String message = "Передан null film";
-        log.warn(message);
-        if (film == null) throw new IllegalStateException(message);
+        if (film == null) {
+            String message = "Передан null film";
+            log.warn(message);
+            throw new IllegalStateException(message);
+        }
     }
 }
