@@ -34,6 +34,10 @@ public class UserService {
         return userStorage.get();
     }
 
+    public User getUserById(long id) throws UserNotFoundException {
+        return userStorage.getUser(id);
+    }
+
     public void addFriend(long user1Id, long user2Id) throws UserNotFoundException {
         userStorage.getUser(user1Id).addFriend(user2Id);
         userStorage.getUser(user2Id).addFriend(user1Id);

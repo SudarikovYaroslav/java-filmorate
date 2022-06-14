@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.generators.FilmIdGenerator;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
@@ -157,7 +156,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void addLikeTest() throws InvalidFilmException, FilmNotFoundException {
+    public void addLikeTest() throws InvalidFilmException, FilmNotFoundException, UserNotFoundException {
         Film film = generateValidFilm();
         filmController.add(film);
         long filmId = film.getId();
@@ -170,7 +169,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void deleteLikeTest() throws InvalidFilmException, FilmNotFoundException {
+    public void deleteLikeTest() throws InvalidFilmException, FilmNotFoundException, UserNotFoundException {
         Film film = generateValidFilm();
         filmController.add(film);
         long filmId = film.getId();
@@ -192,7 +191,7 @@ public class FilmControllerTest {
         }
 
         assertEquals(15, filmController.get().size());
-        assertEquals(FilmService.TOP_FILMS_DEFAULT_COUNT, filmController.getTopFilms(null).size());
+        assertEquals(FilmController.TOP_FILMS_DEFAULT_COUNT, filmController.getTopFilms(null).size());
     }
 
     @Test

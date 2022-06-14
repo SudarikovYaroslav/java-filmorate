@@ -17,10 +17,11 @@ import java.util.Map;
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
+    private final FilmIdGenerator filmIdGenerator = new FilmIdGenerator();
 
     @Override
     public Film add(Film film) throws InvalidFilmException {
-        film.setId(FilmIdGenerator.generate());
+        film.setId(filmIdGenerator.generate());
         log.debug("Фильму присвоен id: " + film.getId());
         films.put(film.getId(), film);
         log.debug("Добавлен фильм: " + film.getName() + " id: " + film.getId());

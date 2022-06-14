@@ -17,10 +17,11 @@ import java.util.Map;
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users = new HashMap<>();
+    private final UserIdGenerator userIdGenerator = new UserIdGenerator();
 
     @Override
     public User add(User user) throws InvalidUserException {
-        user.setId(UserIdGenerator.generate());
+        user.setId(userIdGenerator.generate());
         log.debug("Пользователю присвоен id: " + user.getId());
         users.put(user.getId(), user);
         log.debug("Добавлен пользователь: " + user.getLogin());

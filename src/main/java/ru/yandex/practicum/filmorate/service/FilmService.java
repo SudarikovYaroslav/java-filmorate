@@ -12,8 +12,6 @@ import java.util.List;
 
 @Service
 public class FilmService {
-    public static final int TOP_FILMS_DEFAULT_COUNT = 10;
-
     private final FilmStorage filmStorage;
 
     @Autowired
@@ -33,6 +31,10 @@ public class FilmService {
         return filmStorage.get();
     }
 
+    public Film getFilmById(long id) throws FilmNotFoundException {
+        return filmStorage.getFilm(id);
+    }
+
     public void addLike(long filmId, long userId) throws FilmNotFoundException {
         filmStorage.getFilm(filmId).addLike(userId);
     }
@@ -45,12 +47,7 @@ public class FilmService {
         List<Film> result = new ArrayList<>(filmStorage.get());
         result.sort((f1, f2) -> f2.likesNumber() - f1.likesNumber());
 
-        if (count == null || count == 0) {
-            if (result.size() <= TOP_FILMS_DEFAULT_COUNT) return result;
-            return result.subList(0, TOP_FILMS_DEFAULT_COUNT);
-        } else {
-            if (result.size() <= count) return result;
-            return result.subList(0, count);
-        }
+        if (result.size() <= count) return result;
+        return result.subList(0, count);
     }
 }

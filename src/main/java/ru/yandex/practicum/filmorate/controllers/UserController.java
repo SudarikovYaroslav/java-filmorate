@@ -2,11 +2,9 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
-import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -42,42 +40,34 @@ public class UserController {
        return userService.get();
     }
 
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable long id) throws UserNotFoundException {
+        checkNegativeIds(id);
+        return userService.getUserById(id);
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable long id, @PathVariable long friendId) throws UserNotFoundException {
+        checkNegativeIds(id, friendId);
         userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable long id, @PathVariable long friendId) throws UserNotFoundException {
+        checkNegativeIds(id, friendId);
         userService.deleteFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
     public List<User> getUserFriends(@PathVariable long id) throws UserNotFoundException {
+        checkNegativeIds(id);
         return userService.getUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) throws UserNotFoundException {
+        checkNegativeIds(id, otherId);
         return userService.getCommonFriends(id, otherId);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handle(InvalidUserException e) {
-        return new ErrorResponse("User validation error", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handle(UserNotFoundException e) {
-        return new ErrorResponse("User not found error", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handle(Exception e) {
-        return new ErrorResponse("Internal server error", e.getMessage());
     }
 
     protected void validate(User user) throws InvalidUserException {
@@ -114,13 +104,6 @@ public class UserController {
             log.warn(message);
             throw new InvalidUserException(message);
         }
-
-        // из-за условия в тесте user update unknown вместо 404 результат 400 на id=-1
-        /*if (user.getId() < 0) {
-            String message = "У пользователя отрицательный id. id: " + user.getId();;
-            log.warn(message);
-            throw new InvalidUserException(message);
-        }*/
     }
 
     private void validateNotNull(User user) {
@@ -128,6 +111,12 @@ public class UserController {
             String message = "Передан null user";
             log.warn(message);
             throw new IllegalStateException(message);
+        }
+    }
+
+    public void checkNegativeIds(long... ids) throws UserNotFoundException {
+        for (long id : ids) {
+            if (id <= 0 ) throw new UserNotFoundException("user id:" + id + " не найден");
         }
     }
 }

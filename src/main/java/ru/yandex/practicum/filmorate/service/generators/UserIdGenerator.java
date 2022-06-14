@@ -3,9 +3,9 @@ package ru.yandex.practicum.filmorate.service.generators;
 public class UserIdGenerator {
     private static long id = 1;
 
-    private UserIdGenerator(){}
+    public UserIdGenerator(){}
 
-    public static long generate() {
+    public long generate() {
         return id++;
     }
 }

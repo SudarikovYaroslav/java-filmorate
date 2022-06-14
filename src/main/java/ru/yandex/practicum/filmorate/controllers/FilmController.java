@@ -2,22 +2,23 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
-import ru.yandex.practicum.filmorate.model.ErrorResponse;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
+    public static final int TOP_FILMS_DEFAULT_COUNT = 10;
     public static final long MAX_FILM_DESCRIPTION_LENGTH = 200L;
     public static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
@@ -45,37 +46,31 @@ public class FilmController {
         return filmService.get();
     }
 
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable long id) throws FilmNotFoundException {
+        checkFilmId(id);
+        return filmService.getFilmById(id);
+    }
+
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable long id, @PathVariable long userId) throws FilmNotFoundException {
+    public void addLike(@PathVariable long id, @PathVariable long userId)
+            throws FilmNotFoundException, UserNotFoundException {
+        checkFilmId(id);
+        checkUserId(userId);
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id, @PathVariable long userId) throws FilmNotFoundException {
+    public void deleteLike(@PathVariable long id, @PathVariable long userId)
+            throws FilmNotFoundException, UserNotFoundException {
+        checkFilmId(id);
+        checkUserId(userId);
         filmService.deleteLike(id, userId);
     }
 
-    @GetMapping("/popular?count={count}")
-    public List<Film> getTopFilms(@PathVariable Integer count) {
-        return filmService.getTopFilms(count);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handle(InvalidFilmException e) {
-        return new ErrorResponse("Film validation error", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handle(FilmNotFoundException e) {
-        return new ErrorResponse("Not found error", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handle(Exception e) {
-        return new ErrorResponse("Internal server error", e.getMessage());
+    @GetMapping("/popular")
+    public List<Film> getTopFilms(@RequestParam(required = false) Integer count) {
+        return filmService.getTopFilms(Objects.requireNonNullElse(count, TOP_FILMS_DEFAULT_COUNT));
     }
 
     private void validate(Film film) throws InvalidFilmException {
@@ -110,12 +105,6 @@ public class FilmController {
             log.warn(message);
             throw new InvalidFilmException(message);
         }
-
-        if (film.getId() < 0) {
-            String message = "У фильма отрицательный id. id: " + film.getId();
-            log.warn(message);
-            throw new InvalidFilmException(message);
-        }
     }
 
     private void validateNotNull(Film film) {
@@ -124,5 +113,13 @@ public class FilmController {
             log.warn(message);
             throw new IllegalStateException(message);
         }
+    }
+
+    public void checkFilmId(long id) throws FilmNotFoundException {
+        if (id <= 0 ) throw new FilmNotFoundException("film id:" + id + " не найден");
+    }
+
+    public void checkUserId(long id) throws UserNotFoundException {
+        if (id <= 0) throw new UserNotFoundException("user id: " + id + " не найден");
     }
 }
