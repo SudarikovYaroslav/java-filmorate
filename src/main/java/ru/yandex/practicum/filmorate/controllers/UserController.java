@@ -30,7 +30,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody User user) throws InvalidUserException, UserNotFoundException {
+    public User update(@RequestBody User user) throws InvalidUserException {
         validate(user);
         return userService.update(user);
     }
@@ -41,31 +41,31 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable long id) throws UserNotFoundException {
+    public User getUserById(@PathVariable long id) {
         checkNegativeIds(id);
         return userService.getUserById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable long id, @PathVariable long friendId) throws UserNotFoundException {
+    public void addFriend(@PathVariable long id, @PathVariable long friendId) {
         checkNegativeIds(id, friendId);
         userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable long id, @PathVariable long friendId) throws UserNotFoundException {
+    public void deleteFriend(@PathVariable long id, @PathVariable long friendId) {
         checkNegativeIds(id, friendId);
         userService.deleteFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getUserFriends(@PathVariable long id) throws UserNotFoundException {
+    public List<User> getUserFriends(@PathVariable long id) {
         checkNegativeIds(id);
         return userService.getUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) throws UserNotFoundException {
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
         checkNegativeIds(id, otherId);
         return userService.getCommonFriends(id, otherId);
     }
@@ -114,7 +114,7 @@ public class UserController {
         }
     }
 
-    public void checkNegativeIds(long... ids) throws UserNotFoundException {
+    public void checkNegativeIds(long... ids) {
         for (long id : ids) {
             if (id <= 0 ) throw new UserNotFoundException("user id:" + id + " не найден");
         }

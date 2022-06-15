@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -17,7 +18,12 @@ import java.util.Map;
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users = new HashMap<>();
-    private final UserIdGenerator userIdGenerator = new UserIdGenerator();
+    private final UserIdGenerator userIdGenerator;
+
+    @Autowired
+    public InMemoryUserStorage(UserIdGenerator userIdGenerator) {
+        this.userIdGenerator = userIdGenerator;
+    }
 
     @Override
     public User add(User user) throws InvalidUserException {
@@ -30,7 +36,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User update(User user) throws UserNotFoundException {
+    public User update(User user) {
         if (users.containsKey(user.getId())) {
             users.put(user.getId(), user);
             log.debug("Обновлён пользователь: " + user.getId());
@@ -47,7 +53,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User getUser(long id) throws UserNotFoundException {
+    public User getUser(long id) {
         if (!users.containsKey(id)) throw new UserNotFoundException("Пользователь id: " + id + " не найден");
         return users.get(id);
     }

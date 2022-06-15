@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.generators.FilmIdGenerator;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
@@ -26,7 +27,7 @@ public class FilmControllerTest {
 
     @BeforeEach
     public void preparation() {
-        filmController = new FilmController(new FilmService(new InMemoryFilmStorage()));
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(new FilmIdGenerator())));
     }
 
     @Test
@@ -51,7 +52,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void updateTest() throws InvalidFilmException, FilmNotFoundException {
+    public void updateTest() throws InvalidFilmException {
         Film goalFilm = generateValidFilm();
         filmController.add(goalFilm);
 
@@ -156,7 +157,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void addLikeTest() throws InvalidFilmException, FilmNotFoundException, UserNotFoundException {
+    public void addLikeTest() throws InvalidFilmException {
         Film film = generateValidFilm();
         filmController.add(film);
         long filmId = film.getId();
@@ -169,7 +170,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void deleteLikeTest() throws InvalidFilmException, FilmNotFoundException, UserNotFoundException {
+    public void deleteLikeTest() throws InvalidFilmException {
         Film film = generateValidFilm();
         filmController.add(film);
         long filmId = film.getId();
@@ -183,7 +184,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void getTopFilmsDefaultCountTest() throws InvalidFilmException, FilmNotFoundException {
+    public void getTopFilmsDefaultCountTest() throws InvalidFilmException {
         List<Film> testFilmsWithLikes = generateFilmsListWithLikes();
 
         for (Film film : testFilmsWithLikes) {

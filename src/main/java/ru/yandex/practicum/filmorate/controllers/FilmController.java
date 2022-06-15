@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -36,7 +35,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) throws InvalidFilmException, FilmNotFoundException {
+    public Film update(@RequestBody Film film) throws InvalidFilmException {
         validate(film);
         return filmService.update(film);
     }
@@ -47,7 +46,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable long id) throws FilmNotFoundException {
+    public Film getFilmById(@PathVariable long id) {
         checkFilmId(id);
         return filmService.getFilmById(id);
     }
@@ -70,7 +69,7 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getTopFilms(@RequestParam(required = false) Integer count) {
-        return filmService.getTopFilms(Objects.requireNonNullElse(count, TOP_FILMS_DEFAULT_COUNT));
+        return filmService.getTopFilms(count != null ? count : TOP_FILMS_DEFAULT_COUNT);
     }
 
     private void validate(Film film) throws InvalidFilmException {
@@ -115,11 +114,11 @@ public class FilmController {
         }
     }
 
-    public void checkFilmId(long id) throws FilmNotFoundException {
+    public void checkFilmId(long id) {
         if (id <= 0 ) throw new FilmNotFoundException("film id:" + id + " не найден");
     }
 
-    public void checkUserId(long id) throws UserNotFoundException {
+    public void checkUserId(long id) {
         if (id <= 0) throw new UserNotFoundException("user id: " + id + " не найден");
     }
 }

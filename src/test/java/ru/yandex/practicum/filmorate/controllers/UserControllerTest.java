@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.generators.UserIdGenerator;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
@@ -21,7 +22,7 @@ public class UserControllerTest {
 
     @BeforeEach
     public void preparation() {
-        userController = new UserController(new UserService(new InMemoryUserStorage()));
+        userController = new UserController(new UserService(new InMemoryUserStorage(new UserIdGenerator())));
     }
 
     @Test
@@ -185,7 +186,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void addFriendTest() throws InvalidUserException, UserNotFoundException {
+    public void addFriendTest() throws InvalidUserException {
         User user1 = generateValidUser();
         user1.setName("user1");
         user1.setLogin("user1");
@@ -205,7 +206,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void deleteFriedTest() throws InvalidUserException, UserNotFoundException {
+    public void deleteFriedTest() throws InvalidUserException {
         User user1 = generateValidUser();
         user1.setName("user1");
         user1.setLogin("user1");
@@ -226,7 +227,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void getUserFriendsTest() throws InvalidUserException, UserNotFoundException {
+    public void getUserFriendsTest() throws InvalidUserException {
         User user1 = generateValidUser();
         user1.setName("user1");
         user1.setLogin("user1");
@@ -254,7 +255,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void getCommonFriendsTest() throws InvalidUserException, UserNotFoundException {
+    public void getCommonFriendsTest() throws InvalidUserException {
         User user1 = generateValidUser();
         user1.setName("user1");
         user1.setLogin("user1");
