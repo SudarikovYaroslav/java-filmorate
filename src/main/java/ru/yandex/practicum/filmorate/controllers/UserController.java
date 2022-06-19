@@ -1,54 +1,78 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserIdGenerator;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    Map<Long,User> users = new HashMap<>();
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
     public User add(@RequestBody User user) throws InvalidUserException {
-        validateNotNull(user);
         validate(user);
-        user.setId(UserIdGenerator.generate());
-        log.debug("Пользователю присвоен id: " + user.getId());
-        users.put(user.getId(), user);
-        log.debug("Добавлен пользователь: " + user.getLogin());
-        return user;
+        return userService.add(user);
     }
 
     @PutMapping
     public User update(@RequestBody User user) throws InvalidUserException {
-        validateNotNull(user);
         validate(user);
-
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-            log.debug("Обновлён пользователь: " + user.getId());
-        }
-        return user;
+        return userService.update(user);
     }
 
     @GetMapping
     public List<User> get() {
-        log.debug("Текущее количество пользователей: " + users.size());
-        return new ArrayList<>(users.values());
+       return userService.get();
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable long id) {
+        checkNegativeIds(id);
+        return userService.getUserById(id);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable long id, @PathVariable long friendId) {
+        checkNegativeIds(id, friendId);
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        checkNegativeIds(id, friendId);
+        userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getUserFriends(@PathVariable long id) {
+        checkNegativeIds(id);
+        return userService.getUserFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        checkNegativeIds(id, otherId);
+        return userService.getCommonFriends(id, otherId);
     }
 
     protected void validate(User user) throws InvalidUserException {
+        validateNotNull(user);
+
         if (user.getEmail() == null
                 || user.getLogin() == null
                 || user.getBirthday() == null
@@ -80,17 +104,19 @@ public class UserController {
             log.warn(message);
             throw new InvalidUserException(message);
         }
-
-        if (user.getId() < 0) {
-            String message = "У пользователя отрицательный id. id: " + user.getId();;
-            log.warn(message);
-            throw new InvalidUserException(message);
-        }
     }
 
     private void validateNotNull(User user) {
-        String message = "Передан null user";
-        log.warn(message);
-        if (user == null) throw new IllegalStateException(message);
+        if (user == null) {
+            String message = "Передан null user";
+            log.warn(message);
+            throw new IllegalStateException(message);
+        }
+    }
+
+    public void checkNegativeIds(long... ids) {
+        for (long id : ids) {
+            if (id <= 0 ) throw new UserNotFoundException("user id:" + id + " не найден");
+        }
     }
 }

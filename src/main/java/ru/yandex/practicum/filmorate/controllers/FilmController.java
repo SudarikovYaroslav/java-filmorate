@@ -1,61 +1,80 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmIdGenerator;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
+    public static final int TOP_FILMS_DEFAULT_COUNT = 10;
     public static final long MAX_FILM_DESCRIPTION_LENGTH = 200L;
     public static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
-    private final Map<Long, Film> films = new HashMap<>();
+    private final FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @PostMapping
     public Film add(@RequestBody Film film) throws InvalidFilmException {
-        validateNotNull(film);
         validate(film);
-        film.setId(FilmIdGenerator.generate());
-        log.debug("Фильму присвоен id: " + film.getId());
-        films.put(film.getId(), film);
-        log.debug("Добавлен фильм: " + film.getName());
-        return film;
+        return filmService.add(film);
     }
 
     @PutMapping
     public Film update(@RequestBody Film film) throws InvalidFilmException {
-        validateNotNull(film);
         validate(film);
-
-        if (films.containsKey(film.getId())) {
-            films.put(film.getId(), film);
-            log.debug("Обновлён фильм: " + film.getName());
-        } else {
-            String message = "Попытка обновить несуществующий фильм id: " + film.getId();
-            log.warn(message);
-            throw new InvalidFilmException(message);
-        }
-        return film;
+        return filmService.update(film);
     }
 
     @GetMapping
     public List<Film> get() {
-        log.debug("Текущее количество фильмов: " + films.size());
-        return new ArrayList<>(films.values());
+        return filmService.get();
     }
 
-    protected void validate(Film film) throws InvalidFilmException {
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable long id) {
+        checkFilmId(id);
+        return filmService.getFilmById(id);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable long id, @PathVariable long userId)
+            throws FilmNotFoundException, UserNotFoundException {
+        checkFilmId(id);
+        checkUserId(userId);
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable long id, @PathVariable long userId)
+            throws FilmNotFoundException, UserNotFoundException {
+        checkFilmId(id);
+        checkUserId(userId);
+        filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getTopFilms(@RequestParam(required = false) Integer count) {
+        return filmService.getTopFilms(count != null ? count : TOP_FILMS_DEFAULT_COUNT);
+    }
+
+    private void validate(Film film) throws InvalidFilmException {
+        validateNotNull(film);
+
         if (film.getName() == null) {
             String message = "Объект Film некорректно инициализирован, есть null поля! id: " + film.getId();
             log.warn(message);
@@ -85,17 +104,21 @@ public class FilmController {
             log.warn(message);
             throw new InvalidFilmException(message);
         }
-
-        if (film.getId() < 0) {
-            String message = "У фильма отрицательный id. id: " + film.getId();
-            log.warn(message);
-            throw new InvalidFilmException(message);
-        }
     }
 
     private void validateNotNull(Film film) {
-        String message = "Передан null film";
-        log.warn(message);
-        if (film == null) throw new IllegalStateException(message);
+        if (film == null) {
+            String message = "Передан null film";
+            log.warn(message);
+            throw new IllegalStateException(message);
+        }
+    }
+
+    public void checkFilmId(long id) {
+        if (id <= 0 ) throw new FilmNotFoundException("film id:" + id + " не найден");
+    }
+
+    public void checkUserId(long id) {
+        if (id <= 0) throw new UserNotFoundException("user id: " + id + " не найден");
     }
 }
