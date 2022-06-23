@@ -1,12 +1,19 @@
 package ru.yandex.practicum.filmorate.controllers;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmIdGenerator;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.generators.FilmIdGenerator;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,11 +23,15 @@ public class FilmControllerTest {
     private static final String DESCRIPTION = "Test description";
     private static final LocalDate RELEASE_DATE = LocalDate.of(2000, 1, 1);
     private static final long DURATION = 120L;
+    private static FilmController filmController;
+
+    @BeforeEach
+    public void preparation() {
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(new FilmIdGenerator())));
+    }
 
     @Test
     public void addTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
-
         Film film1 = generateValidFilm();
         film1.setId(0);
         film1.setName("Film one");
@@ -42,7 +53,6 @@ public class FilmControllerTest {
 
     @Test
     public void updateTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
         Film goalFilm = generateValidFilm();
         filmController.add(goalFilm);
 
@@ -64,7 +74,6 @@ public class FilmControllerTest {
     @Test
     public void nameValidationTest() throws InvalidFilmException {
         Film film = generateValidFilm();
-        FilmController filmController = new FilmController();
         filmController.add(film);
         assertNotEquals(0, filmController.get().size());
 
@@ -85,8 +94,6 @@ public class FilmControllerTest {
 
     @Test
     public void filmIdInvalidTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
-
         Film invalidIdFilm = generateValidFilm();
         invalidIdFilm.setId(0);
         filmController.add(invalidIdFilm);
@@ -95,8 +102,6 @@ public class FilmControllerTest {
 
     @Test
     public void filmDescriptionValidationTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
-
         Film tooLongDescriptionFilm = generateValidFilm();
         tooLongDescriptionFilm.setDescription(generateTooLongDescription());
 
@@ -113,7 +118,6 @@ public class FilmControllerTest {
 
     @Test
     public void releaseValidationTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
         Film firstFilmEver = generateValidFilm();
 
         firstFilmEver.setReleaseDate(FilmController.FIRST_FILM_BIRTHDAY);
@@ -130,7 +134,6 @@ public class FilmControllerTest {
 
     @Test
     public void durationValidationTest() throws InvalidFilmException {
-        FilmController filmController = new FilmController();
         Film zeroDurationFilm = generateValidFilm();
         zeroDurationFilm.setDuration(0);
 
@@ -147,13 +150,108 @@ public class FilmControllerTest {
 
     @Test
     public void addNullFilmTest() {
-        Film film = null;
-        FilmController filmController = new FilmController();
-
         assertThrows(IllegalStateException.class, () -> {
-                    filmController.add(film);
+                    filmController.add(null);
                 }
         );
+    }
+
+    @Test
+    public void addLikeTest() throws InvalidFilmException {
+        Film film = generateValidFilm();
+        filmController.add(film);
+        long filmId = film.getId();
+        long user1Id = 1;
+        long user2Id = 2;
+        filmController.addLike(filmId, user1Id);
+        filmController.addLike(filmId, user2Id);
+
+        assertEquals(2, film.likesNumber());
+    }
+
+    @Test
+    public void deleteLikeTest() throws InvalidFilmException {
+        Film film = generateValidFilm();
+        filmController.add(film);
+        long filmId = film.getId();
+        long user1Id = 1;
+        long user2Id = 2;
+        filmController.addLike(filmId, user1Id);
+        filmController.addLike(filmId, user2Id);
+
+        filmController.deleteLike(filmId, user1Id);
+        assertEquals(1, film.likesNumber());
+    }
+
+    @Test
+    public void getTopFilmsDefaultCountTest() throws InvalidFilmException {
+        List<Film> testFilmsWithLikes = generateFilmsListWithLikes();
+
+        for (Film film : testFilmsWithLikes) {
+            filmController.add(film);
+        }
+
+        assertEquals(15, filmController.get().size());
+        assertEquals(FilmController.TOP_FILMS_DEFAULT_COUNT, filmController.getTopFilms(null).size());
+    }
+
+    @Test
+    public void getTopFilmsWithSetCountTest() throws InvalidFilmException {
+        int count1 = 1;
+        int count2 = 3;
+        int count3 = 7;
+
+        List<Film> testFilmsWithLikes = generateFilmsListWithLikes();
+
+        for (Film film : testFilmsWithLikes) {
+            filmController.add(film);
+        }
+
+        assertEquals(15, filmController.get().size());
+        assertEquals(count1, filmController.getTopFilms(count1).size());
+        assertEquals(count2, filmController.getTopFilms(count2).size());
+        assertEquals(count3, filmController.getTopFilms(count3).size());
+
+    }
+
+    @Test
+    public void getTopFilmsSortingTest() throws InvalidFilmException {
+        List<Film> testFilmsWithLikes = generateFilmsListWithLikes();
+
+        for (Film film : testFilmsWithLikes) {
+            filmController.add(film);
+        }
+
+        List<Film> topFilms = filmController.getTopFilms(null);
+        Film mostLikeFilm = topFilms.get(0);
+        Film listLikedFilm = topFilms.get(topFilms.size() - 1);
+        assertTrue(mostLikeFilm.likesNumber() >= listLikedFilm.likesNumber());
+    }
+
+    private List<Integer> generateUsersIdList() {
+        List<Integer> usersIds = new ArrayList<>();
+
+        for (int i = 1; i <= 15; i++) {
+            usersIds.add(i);
+        }
+        return usersIds;
+    }
+
+    private List<Film> generateFilmsListWithLikes() {
+        // создаём 15 фильмов и добавляем каждому лайки
+        List<Integer> usersId = generateUsersIdList();
+        List<Film> filmsList = new ArrayList<>();
+        for (int i = 1; i <= 15; i++) {
+            String filmName = "TestFilm: " + i;
+            Film film = generateValidFilm();
+            film.setName(filmName);
+
+            for (int j = 0; j < i; j++) {
+                film.addLike(usersId.get(j));
+            }
+            filmsList.add(film);
+        }
+        return filmsList;
     }
 
     /**
@@ -180,7 +278,6 @@ public class FilmControllerTest {
 
     private Film generateValidFilm() {
         return Film.builder()
-                .id(FilmIdGenerator.generate())
                 .name(NAME)
                 .description(DESCRIPTION)
                 .releaseDate(RELEASE_DATE)
