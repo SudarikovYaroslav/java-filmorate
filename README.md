@@ -1,8 +1,15 @@
-# java-filmorate
-Template repository for Filmorate project.
+# <img src= https://mir-cdn.behance.net/v1/rendition/projects/230/3da78b54757441.Y3JvcCw4NzIsNjgyLDAsMA.jpg> FILMORATE
 
-#### Ссылка на ER-диаграмму:
+---
+
+***Сервис по поиску топ фильмов для просмотра.***
+
+---
+
+### ER-диаграмма:
+![er-diagram](\ER-diagramm.png)
 https://app.quickdatabasediagrams.com/#/d/ozfp4o
+  
 
 #### Примеры SQL запросов:
 - Получить список названий всех фильмов  
