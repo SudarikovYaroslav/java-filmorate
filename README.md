@@ -7,7 +7,7 @@
 ---
 
 ### ER-диаграмма:
-![er-diagram](\ER-diagramm.png)
+![](ER-diagram.png)
 https://app.quickdatabasediagrams.com/#/d/ozfp4o
   
 
