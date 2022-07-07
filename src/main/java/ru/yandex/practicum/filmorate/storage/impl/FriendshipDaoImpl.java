@@ -20,21 +20,21 @@ public class FriendshipDaoImpl implements FriendshipDao {
     }
 
     @Override
-    public void addFriend(Long user, Long toUser) {
-        long friendsHipStatus = determineFriendsHipStatus(user, toUser);
+    public void addFriend(Long userId, Long friendId) {
+        long friendsHipStatus = determineFriendsHipStatus(userId, friendId);
         String sqlQuery = "insert into USER_FRIENDS (user_id, friend_id, friendship_status_id) " +
                 "values (?, ?, ?)"
         ;
 
         jdbcTemplate.update(sqlQuery,
-                user,
-                toUser,
+                userId,
+                friendId,
                 friendsHipStatus
         );
     }
 
     @Override
-    public boolean deleteFriend(Long user, Long fromUser) {
+    public boolean deleteFriend(Long fromUser, Long user) {
         String sqlQuery = "delete from USER_FRIENDS where user_id = ? and friend_id = ?";
         return jdbcTemplate.update(sqlQuery, user, fromUser) > 0;
     }
@@ -50,12 +50,12 @@ public class FriendshipDaoImpl implements FriendshipDao {
     }
 
     /**
-     * Определяет статус дружбы: если toUser уже находится в друзьях у user, то дружбе будет присвоен статус 2 -
+     * Определяет статус дружбы: если user уже находится в друзьях у friend, то дружбе будет присвоен статус 2 -
      * подтверждённая, в противном случае 1 - неподтверждённая
      */
-    private long determineFriendsHipStatus(long user, long toUser) {
-        List<Long> friendsId = getFriends(user);
-        if (friendsId.contains(toUser)) return 2;
+    private long determineFriendsHipStatus(long user, long friend) {
+        List<Long> friendsId = getFriends(friend);
+        if (friendsId.contains(user)) return 2;
         return 1;
     }
 }

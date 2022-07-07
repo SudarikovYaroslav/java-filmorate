@@ -42,10 +42,9 @@ public class UserService {
         return userStorageDao.findUserById(id).orElse(null);
     }
 
-    public void addFriend(long user1Id, long user2Id) throws UserNotFoundException {
-        friendshipDao.addFriend(user1Id, user2Id);
-        friendshipDao.addFriend(user2Id, user1Id);
-        log.debug("пользователи: id:" + user1Id + " и id:" + user2Id + " теперь друзья");
+    public void addFriend(long userId, long friendId) throws UserNotFoundException {
+        friendshipDao.addFriend(userId, friendId);
+        log.debug("пользователь: id:" + friendId + " добавлен в друзья пользователю id: " + userId);
     }
 
     public void deleteFriend(long user1Id, long user2Id) throws UserNotFoundException {
