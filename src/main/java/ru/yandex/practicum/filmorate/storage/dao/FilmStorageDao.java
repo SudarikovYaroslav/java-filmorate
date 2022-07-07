@@ -1,18 +1,19 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.dao;
 
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface FilmStorage {
+public interface FilmStorageDao {
 
-    Film add(Film film) throws InvalidFilmException;
+    Film save(Film film) throws InvalidFilmException;
 
     Film update(Film film) throws InvalidFilmException, FilmNotFoundException;
 
-    List<Film> get();
+    List<Film> findAll();
 
-    Film getFilm(long id) throws FilmNotFoundException;
+    Optional<Film> findFilmById(long id) throws FilmNotFoundException;
 }

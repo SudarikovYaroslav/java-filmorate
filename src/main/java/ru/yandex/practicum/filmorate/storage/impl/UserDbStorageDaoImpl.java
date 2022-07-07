@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.dao;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -9,27 +9,28 @@ import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.FriendLoadingContainer;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.UserStorageDao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @Qualifier("userDbStorage")
-public class UserDbStorage implements UserStorage {
+public class UserDbStorageDaoImpl implements UserStorageDao {
 
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
+    public UserDbStorageDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
-    public User add(User user) throws InvalidUserException {
+    public User save(User user) throws InvalidUserException {
         String sqlQuery = "insert into USERS (user_id, email, login, username, birthday) " +
                 "values (?, ?, ?, ?, ?)"
         ;
@@ -58,15 +59,15 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public List<User> get() {
+    public List<User> findAll() {
         String sqlQuery = "select * from USERS";
         return jdbcTemplate.query(sqlQuery, this::makeUser);
     }
 
     @Override
-    public User getUser(long id) throws UserNotFoundException {
+    public Optional<User> findUserById(long id) throws UserNotFoundException {
         String sqlQuery = "select * from USERS where user_id = " + id;
-        return jdbcTemplate.query(sqlQuery, this::makeUser).get(0);
+        return Optional.of(jdbcTemplate.query(sqlQuery, this::makeUser).get(0));
     }
 
     /**
@@ -112,7 +113,6 @@ public class UserDbStorage implements UserStorage {
                 .login(rs.getString("login"))
                 .name(rs.getString("username"))
                 .birthday(rs.getDate("birthday").toLocalDate())
-                .friends(findFriendsWithFriendshipById(userId))
                 .build();
     }
 }

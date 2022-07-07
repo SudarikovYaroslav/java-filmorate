@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.dao.LikesDao;
+import ru.yandex.practicum.filmorate.storage.dao.FilmStorageDao;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,40 +15,42 @@ import java.util.List;
 @Service
 public class FilmService {
 
-    private final FilmStorage filmStorage;
+    private final FilmStorageDao filmStorageDao;
+    private final LikesDao likesDao;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
+    public FilmService(@Qualifier("filmDbStorageDaoImpl") FilmStorageDao filmStorageDao, LikesDao likesDao) {
+        this.filmStorageDao = filmStorageDao;
+        this.likesDao = likesDao;
     }
 
     public Film add(Film film) throws InvalidFilmException {
-        return filmStorage.add(film);
+        return filmStorageDao.save(film);
     }
 
     public Film update(Film film) throws InvalidFilmException, FilmNotFoundException {
-        return filmStorage.update(film);
+        return filmStorageDao.update(film);
     }
 
     public List<Film> get() {
-        return filmStorage.get();
+        return filmStorageDao.findAll();
     }
 
     public Film getFilmById(long id) throws FilmNotFoundException {
-        return filmStorage.getFilm(id);
+        return filmStorageDao.findFilmById(id).orElse(null);
     }
 
     public void addLike(long filmId, long userId) throws FilmNotFoundException {
-        filmStorage.getFilm(filmId).addLike(userId);
+        likesDao.addLike(filmId, userId);
     }
 
     public void deleteLike(long filmId, long userId) throws FilmNotFoundException {
-        filmStorage.getFilm(filmId).deleteLike(userId);
+        likesDao.deleteLike(filmId, userId);
     }
 
     public List<Film> getTopFilms(Integer count) {
-        List<Film> result = new ArrayList<>(filmStorage.get());
-        result.sort((f1, f2) -> f2.likesNumber() - f1.likesNumber());
+        List<Film> result = new ArrayList<>(filmStorageDao.findAll());
+        result.sort((f1, f2) -> (likesDao.likesNumber(f2.getId()) - likesDao.likesNumber(f1.getId())));
 
         if (result.size() <= count) return result;
         return result.subList(0, count);

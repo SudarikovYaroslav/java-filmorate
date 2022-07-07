@@ -1,17 +1,18 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.dao;
 
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface UserStorage {
-    User add(User user) throws InvalidUserException;
+public interface UserStorageDao {
+    User save(User user) throws InvalidUserException;
 
     User update(User user) throws InvalidUserException, UserNotFoundException;
 
-    List<User> get();
+    List<User> findAll();
 
-    User getUser(long id) throws UserNotFoundException;
+    Optional<User> findUserById(long id) throws UserNotFoundException;
 }
