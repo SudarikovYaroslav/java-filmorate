@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Component
 @Qualifier("userDbStorage")
 public class UserDbStorageDaoImpl implements UserStorageDao {
@@ -30,17 +33,13 @@ public class UserDbStorageDaoImpl implements UserStorageDao {
     }
 
     @Override
-    public User save(User user) throws InvalidUserException {
-        String sqlQuery = "insert into USERS (user_id, email, login, username, birthday) " +
-                "values (?, ?, ?, ?, ?)"
-        ;
-        jdbcTemplate.update(sqlQuery,
-                            user.getId(),
-                            user.getEmail(),
-                            user.getLogin(),
-                            user.getName(),
-                            user.getBirthday()
-        );
+    public User save(User user) {
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("USERS")
+                .usingGeneratedKeyColumns("user_id");
+        long id = simpleJdbcInsert.executeAndReturnKey(toMap(user)).longValue();
+        user.setId(id);
+        log.debug("Сохранён пользователь id: " + id);
         return user;
     }
 
@@ -55,6 +54,7 @@ public class UserDbStorageDaoImpl implements UserStorageDao {
                             user.getName(),
                             user.getBirthday(),
                             user.getId());
+        log.debug("Обновлён пользователь id: " + user.getId());
         return user;
     }
 
@@ -114,5 +114,14 @@ public class UserDbStorageDaoImpl implements UserStorageDao {
                 .name(rs.getString("username"))
                 .birthday(rs.getDate("birthday").toLocalDate())
                 .build();
+    }
+
+    private Map<String, Object> toMap(User user) {
+        Map<String, Object> values = new HashMap<>();
+        values.put("email", user.getEmail());
+        values.put("login", user.getLogin());
+        values.put("username", user.getName());
+        values.put("birthday", user.getBirthday());
+        return values;
     }
 }

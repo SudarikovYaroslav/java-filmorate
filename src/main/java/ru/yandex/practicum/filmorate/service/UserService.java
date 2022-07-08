@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Service
 public class UserService {
     private final UserStorageDao userStorageDao;
@@ -44,13 +43,10 @@ public class UserService {
 
     public void addFriend(long userId, long friendId) throws UserNotFoundException {
         friendshipDao.addFriend(userId, friendId);
-        log.debug("пользователь: id:" + friendId + " добавлен в друзья пользователю id: " + userId);
     }
 
-    public void deleteFriend(long user1Id, long user2Id) throws UserNotFoundException {
-        friendshipDao.deleteFriend(user1Id, user2Id);
-        friendshipDao.deleteFriend(user2Id, user1Id);
-        log.debug("пользователи: id:" + user1Id + " и id:" + user2Id + " больше не друзья");
+    public void deleteFriend(long userId, long friendId) throws UserNotFoundException {
+        friendshipDao.deleteFriend(userId, friendId);
     }
 
     public List<User> getUserFriends(long id) throws UserNotFoundException {

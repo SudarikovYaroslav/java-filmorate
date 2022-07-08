@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+@Slf4j
 @Component
 public class FriendshipDaoImpl implements FriendshipDao {
 
@@ -31,12 +33,18 @@ public class FriendshipDaoImpl implements FriendshipDao {
                 friendId,
                 friendsHipStatus
         );
+
+        log.debug(String.format("Пользователю id: %d добавлен друг id: %d статус дружбы id: %s"
+                , userId, friendId, friendsHipStatus))
+        ;
     }
 
     @Override
-    public boolean deleteFriend(Long fromUser, Long user) {
+    public boolean deleteFriend(Long userId, Long friendId) {
         String sqlQuery = "delete from USER_FRIENDS where user_id = ? and friend_id = ?";
-        return jdbcTemplate.update(sqlQuery, user, fromUser) > 0;
+        boolean result = jdbcTemplate.update(sqlQuery, userId, friendId) > 0;
+        log.debug(String.format("пользователь id: %d удалён из друзей пользователя id: %d", friendId, userId));
+        return result;
     }
 
     @Override
