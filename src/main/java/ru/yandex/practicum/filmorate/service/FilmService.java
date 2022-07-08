@@ -6,8 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.storage.dao.GenreDao;
 import ru.yandex.practicum.filmorate.storage.dao.LikesDao;
 import ru.yandex.practicum.filmorate.storage.dao.FilmStorageDao;
+import ru.yandex.practicum.filmorate.storage.dao.MpaRatingDao;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +21,18 @@ public class FilmService {
 
     private final FilmStorageDao filmStorageDao;
     private final LikesDao likesDao;
+    private final GenreDao genreDao;
+    private final MpaRatingDao mpaRatingDao;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorageDaoImpl") FilmStorageDao filmStorageDao, LikesDao likesDao) {
+    public FilmService(@Qualifier("filmDbStorageDaoImpl") FilmStorageDao filmStorageDao,
+                       LikesDao likesDao,
+                       GenreDao genreDao,
+                       MpaRatingDao mpaRatingDao) {
         this.filmStorageDao = filmStorageDao;
         this.likesDao = likesDao;
+        this.genreDao = genreDao;
+        this.mpaRatingDao = mpaRatingDao;
     }
 
     public Film add(Film film) throws InvalidFilmException {
@@ -54,5 +65,21 @@ public class FilmService {
 
         if (result.size() <= count) return result;
         return result.subList(0, count);
+    }
+
+    public List<Genre> findAllGenres() {
+        return genreDao.findAllGenres();
+    }
+
+    public Genre findGenreById(long id) {
+        return genreDao.findGenreById(id);
+    }
+
+    public List<MpaRating> findAllMpaRatings() {
+        return mpaRatingDao.findAllMpaRatings();
+    }
+
+    public MpaRating findMpaRatingById(long id) {
+        return mpaRatingDao.findMpaRatingById(id);
     }
 }

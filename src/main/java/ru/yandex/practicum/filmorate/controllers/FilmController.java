@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
@@ -49,6 +51,26 @@ public class FilmController {
     public Film getFilmById(@PathVariable long id) {
         checkFilmId(id);
         return filmService.getFilmById(id);
+    }
+
+    @GetMapping("/genres")
+    public List<Genre> getAllGenres() {
+        return filmService.findAllGenres();
+    }
+
+    @GetMapping("/genres/{id}")
+    public Genre getGenresById(@PathVariable long id) {
+        return filmService.findGenreById(id);
+    }
+
+    @GetMapping("/mpa")
+    public List<MpaRating> getAllMpaRatings() {
+        return filmService.findAllMpaRatings();
+    }
+
+    @GetMapping("/mpa/{id}")
+    public MpaRating getMpaRatingById(@PathVariable long id) {
+        return filmService.findMpaRatingById(id);
     }
 
     @PutMapping("/{id}/like/{userId}")
