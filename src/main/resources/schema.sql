@@ -38,7 +38,7 @@ create table if not exists USERS(
 
 create table if not exists USER_FRIENDS (
     user_id int references USERS (user_id),
-    friend_id int,
+    friend_id int references USERS (user_id),
     friendship_status_id int references FRIENDSHIP_STATUSES (friendship_status_id),
     PRIMARY KEY (user_id, friend_id)
 );

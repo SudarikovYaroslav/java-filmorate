@@ -18,6 +18,6 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private long duration;
-    private Long mpaId;
-    private List<Long> genres = new ArrayList<>();
+    private Mpa mpa;
+    private List<Genre> genres = new ArrayList<>();
 }

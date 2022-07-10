@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
 
 public interface MpaRatingDao {
 
-    List<MpaRating> findAllMpaRatings();
+    List<Mpa> findAllMpaRatings();
 
-    MpaRating findMpaRatingById(long id);
+    Mpa findMpaRatingById(long id);
 }

@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.impl.FilmDbStorageDaoImpl;
 import ru.yandex.practicum.filmorate.storage.impl.UserDbStorageDaoImpl;
@@ -18,7 +20,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -127,7 +128,7 @@ class FilmorateApplicationTests {
                 .releaseDate(LocalDate.of(1979,4,17))
                 .description("Duis in consequat esse")
                 .duration(100)
-                .mpaId(1L)
+                .mpa(Mpa.builder().id(1L).name("G").build())
                 .build();
     }
 
@@ -138,7 +139,7 @@ class FilmorateApplicationTests {
                 .releaseDate(LocalDate.of(1989,4,17))
                 .description("New film update decription")
                 .duration(190)
-                .mpaId(5L)
+                .mpa(Mpa.builder().id(5L).name("NC-17").build())
                 .build();
     }
 
@@ -148,8 +149,8 @@ class FilmorateApplicationTests {
                 .releaseDate(LocalDate.of(1999,4,30))
                 .description("New film about friends")
                 .duration(120)
-                .mpaId(3L)
-                .genres(List.of(1L))
+                .mpa(Mpa.builder().id(3L).name("PG-13").build())
+                .genres(List.of(Genre.builder().id(1).name("Комедия").build()))
                 .build();
     }
 }

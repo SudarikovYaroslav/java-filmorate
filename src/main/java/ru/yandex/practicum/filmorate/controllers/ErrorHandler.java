@@ -4,10 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
-import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 @RestControllerAdvice
@@ -29,6 +26,18 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handle(UserNotFoundException e) {
         return new ErrorResponse("User not found error", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handle(MpaNotFoundException e) {
+        return new ErrorResponse("Mpa not found error", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handle(GenreNotFoundException e) {
+        return new ErrorResponse("Genre not found error", e.getMessage());
     }
 
     @ExceptionHandler

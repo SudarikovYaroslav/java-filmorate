@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -72,6 +73,10 @@ public class UserController {
 
     protected void validate(User user) throws InvalidUserException {
         validateNotNull(user);
+
+        if(user.getId() < 0) {
+            throw new UserNotFoundException("id пользователя не может быть отрицательным");
+        }
 
         if (user.getEmail() == null
                 || user.getLogin() == null

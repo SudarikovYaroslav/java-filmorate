@@ -7,13 +7,11 @@ import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.storage.dao.FilmStorageDao;
 import ru.yandex.practicum.filmorate.storage.dao.GenreDao;
 import ru.yandex.practicum.filmorate.storage.dao.LikesDao;
-import ru.yandex.practicum.filmorate.storage.dao.FilmStorageDao;
 import ru.yandex.practicum.filmorate.storage.dao.MpaRatingDao;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,7 +20,6 @@ public class FilmService {
     private final FilmStorageDao filmStorageDao;
     private final LikesDao likesDao;
     private final GenreDao genreDao;
-    private final MpaRatingDao mpaRatingDao;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorageDaoImpl") FilmStorageDao filmStorageDao,
@@ -32,7 +29,6 @@ public class FilmService {
         this.filmStorageDao = filmStorageDao;
         this.likesDao = likesDao;
         this.genreDao = genreDao;
-        this.mpaRatingDao = mpaRatingDao;
     }
 
     public Film add(Film film) throws InvalidFilmException {
@@ -60,26 +56,10 @@ public class FilmService {
     }
 
     public List<Film> getTopFilms(Integer count) {
-        List<Film> result = new ArrayList<>(filmStorageDao.findAll());
+        List<Film> result = filmStorageDao.findAll();
         result.sort((f1, f2) -> (likesDao.likesNumber(f2.getId()) - likesDao.likesNumber(f1.getId())));
 
         if (result.size() <= count) return result;
         return result.subList(0, count);
-    }
-
-    public List<Genre> findAllGenres() {
-        return genreDao.findAllGenres();
-    }
-
-    public Genre findGenreById(long id) {
-        return genreDao.findGenreById(id);
-    }
-
-    public List<MpaRating> findAllMpaRatings() {
-        return mpaRatingDao.findAllMpaRatings();
-    }
-
-    public MpaRating findMpaRatingById(long id) {
-        return mpaRatingDao.findMpaRatingById(id);
     }
 }

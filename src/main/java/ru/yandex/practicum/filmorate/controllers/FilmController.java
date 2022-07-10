@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
@@ -19,7 +19,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    public static final int TOP_FILMS_DEFAULT_COUNT = 10;
     public static final long MAX_FILM_DESCRIPTION_LENGTH = 200L;
     public static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
@@ -53,26 +52,6 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
-    @GetMapping("/genres")
-    public List<Genre> getAllGenres() {
-        return filmService.findAllGenres();
-    }
-
-    @GetMapping("/genres/{id}")
-    public Genre getGenresById(@PathVariable long id) {
-        return filmService.findGenreById(id);
-    }
-
-    @GetMapping("/mpa")
-    public List<MpaRating> getAllMpaRatings() {
-        return filmService.findAllMpaRatings();
-    }
-
-    @GetMapping("/mpa/{id}")
-    public MpaRating getMpaRatingById(@PathVariable long id) {
-        return filmService.findMpaRatingById(id);
-    }
-
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable long id, @PathVariable long userId)
             throws FilmNotFoundException, UserNotFoundException {
@@ -90,12 +69,14 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopFilms(@RequestParam(required = false) Integer count) {
-        return filmService.getTopFilms(count != null ? count : TOP_FILMS_DEFAULT_COUNT);
+    public List<Film> getTopFilms(@RequestParam(defaultValue = "10") Integer count) {
+        return filmService.getTopFilms(count);
     }
 
     private void validate(Film film) throws InvalidFilmException {
         validateNotNull(film);
+
+        checkFilmId(film.getId());
 
         if (film.getName() == null) {
             String message = "Объект Film некорректно инициализирован, есть null поля! id: " + film.getId();
@@ -126,6 +107,10 @@ public class FilmController {
             log.warn(message);
             throw new InvalidFilmException(message);
         }
+
+        if (film.getMpa() == null) {
+            throw new InvalidFilmException(String.format("у фильма id: %d не установлен mpa", film.getId()));
+        }
     }
 
     private void validateNotNull(Film film) {
@@ -137,7 +122,7 @@ public class FilmController {
     }
 
     public void checkFilmId(long id) {
-        if (id <= 0 ) throw new FilmNotFoundException("film id:" + id + " не найден");
+        if (id < 0 ) throw new FilmNotFoundException("film id:" + id + " не найден");
     }
 
     public void checkUserId(long id) {
