@@ -83,17 +83,6 @@ public class FilmDbStorageDaoImpl implements FilmStorageDao {
         return Optional.of(jdbcTemplate.query(sqlQuery, this::makeFilm).get(0));
     }
 
-    private List<Genre> findGenresByFilmId(long filmId) {
-        String sqlQuery = "select genre_id from FILM_GENRES where film_id = ?";
-        List<Long> genresId = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenreId(rs), filmId);
-        List<Genre> result = new ArrayList<>();
-
-        for (long genreId : genresId) {
-            result.add(makeGenreById(genreId));
-        }
-        return result;
-    }
-
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         long filmId = rs.getLong("film_id");
         List<Genre> genres = findGenresByFilmId(filmId);
@@ -108,20 +97,6 @@ public class FilmDbStorageDaoImpl implements FilmStorageDao {
                 .build();
     }
 
-    private Long makeGenreId(ResultSet rs) throws SQLException {
-        return rs.getLong("genre_id");
-    }
-
-    private Map<String, Object> toMap(Film film) {
-        Map<String, Object> values = new HashMap<>();
-        values.put("film_name", film.getName());
-        values.put("description", film.getDescription());
-        values.put("release_date", film.getReleaseDate());
-        values.put("duration", film.getDuration());
-        values.put("mpa_rating_id", film.getMpa().getId());
-        return values;
-    }
-
     private Mpa makeMpaById(long mpaId) {
         String sqlQuery = "select mpa_name from MPA_RATINGS where mpa_rating_id = ?";
         String mpaName = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeMpaName(rs), mpaId).get(0);
@@ -131,21 +106,36 @@ public class FilmDbStorageDaoImpl implements FilmStorageDao {
                 .build();
     }
 
-    private String makeMpaName(ResultSet rs) throws SQLException {
-        return rs.getString("mpa_name");
-    }
-
     private Genre makeGenreById(long genreId) {
         String sqlQuery = "select genre_name from GENRES where genre_id = ?";
-        String genreName = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> extractGenreName(rs), genreId).get(0);
+        String genreName = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenreName(rs), genreId).get(0);
         return Genre.builder()
                 .id(genreId)
                 .name(genreName)
                 .build();
     }
 
-    private String extractGenreName(ResultSet rs) throws SQLException {
+    private String makeMpaName(ResultSet rs) throws SQLException {
+        return rs.getString("mpa_name");
+    }
+
+    private String makeGenreName(ResultSet rs) throws SQLException {
         return rs.getString("genre_name");
+    }
+
+    private Long makeGenreId(ResultSet rs) throws SQLException {
+        return rs.getLong("genre_id");
+    }
+
+    private List<Genre> findGenresByFilmId(long filmId) {
+        String sqlQuery = "select genre_id from FILM_GENRES where film_id = ?";
+        List<Long> genresId = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenreId(rs), filmId);
+        List<Genre> result = new ArrayList<>();
+
+        for (long genreId : genresId) {
+            result.add(makeGenreById(genreId));
+        }
+        return result;
     }
 
     private void fillFilmGenresTable(Film film) {
@@ -164,9 +154,19 @@ public class FilmDbStorageDaoImpl implements FilmStorageDao {
         fillFilmGenresTable(film);
     }
 
-    public boolean cleanOldFilmGenresRecords(Film film) {
+    public void cleanOldFilmGenresRecords(Film film) {
         String sqlQuery = "delete from FILM_GENRES where film_id = ?";
-        return jdbcTemplate.update(sqlQuery, film.getId()) > 0;
+        jdbcTemplate.update(sqlQuery, film.getId());
+    }
+
+    private Map<String, Object> toMap(Film film) {
+        Map<String, Object> values = new HashMap<>();
+        values.put("film_name", film.getName());
+        values.put("description", film.getDescription());
+        values.put("release_date", film.getReleaseDate());
+        values.put("duration", film.getDuration());
+        values.put("mpa_rating_id", film.getMpa().getId());
+        return values;
     }
 }
 

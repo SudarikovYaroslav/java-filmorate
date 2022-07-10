@@ -23,10 +23,10 @@ https://app.quickdatabasediagrams.com/#/d/ozfp4o
 - Получить топ 10 популярных фильмов  
   ```` SQL
   select film_name  
-  from film as f  
-  join like as l on f.film_id = l.film_id  
-  group by name  
-  order by count(like.user_id) desc  
+  from FILMS as f  
+  left join LIKES as l on f.film_id = l.film_id  
+  group by f.film_name  
+  order by count(l.user_id) desc  
   limit (10);
 
 - Получить список id общих друзей пользователей user1 и user2  

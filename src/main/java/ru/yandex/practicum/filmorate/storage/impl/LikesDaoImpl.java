@@ -30,9 +30,9 @@ public class LikesDaoImpl implements LikesDao {
     }
 
     @Override
-    public boolean deleteLike(long film, long user) {
+    public void deleteLike(long film, long user) {
         String sqlQuery = "delete FROM LIKES where film_id = ? and user_id = ?";
-        return jdbcTemplate.update(sqlQuery, film, user) > 0;
+        jdbcTemplate.update(sqlQuery, film, user);
     }
 
     @Override

@@ -74,7 +74,7 @@ public class UserDbStorageDaoImpl implements UserStorageDao {
      * При загрузке друзей пользователя используется промежуточный контейнер - FriendLoadingContainer,
      * для обеспечения возможности загрузки всей необходимой информации по дружбе за один запрос
      * сразу к двум таблицам, и удобного заполнения мапы друзей класса User
-     * */
+     */
     private Map<Long, FriendshipStatus> findFriendsWithFriendshipById(long userId) {
         Map<Long, FriendshipStatus> resultMap = new HashMap<>();
 

@@ -40,11 +40,10 @@ public class FriendshipDaoImpl implements FriendshipDao {
     }
 
     @Override
-    public boolean deleteFriend(Long userId, Long friendId) {
+    public void deleteFriend(Long userId, Long friendId) {
         String sqlQuery = "delete from USER_FRIENDS where user_id = ? and friend_id = ?";
         boolean result = jdbcTemplate.update(sqlQuery, userId, friendId) > 0;
         log.debug(String.format("пользователь id: %d удалён из друзей пользователя id: %d", friendId, userId));
-        return result;
     }
 
     @Override

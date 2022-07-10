@@ -155,16 +155,3 @@ class FilmorateApplicationTests {
     }
 }
 
-/*
-
-{
-  "name": "New film",
-  "releaseDate": "1999-04-30",
-  "description": "New film about friends",
-  "duration": 120,
-  "rate": 4,
-  "mpa": { "id": 3},
-  "genres": [{ "id": 1}]
-}
- */
-
