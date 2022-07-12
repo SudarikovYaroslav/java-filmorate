@@ -3,18 +3,20 @@ package ru.yandex.practicum.filmorate.storage.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.storage.dao.LikesDao;
+import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Component
-public class LikesDaoImpl implements LikesDao {
+public class LikeDaoImpl implements LikeDao {
+
+    public static String USER_ID_COLUMN = "user_id";
 
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public LikesDaoImpl(JdbcTemplate jdbcTemplate) {
+    public LikeDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -42,6 +44,6 @@ public class LikesDaoImpl implements LikesDao {
     }
 
     private long makeId(ResultSet rs, int rowNum) throws SQLException {
-        return rs.getLong("user_id");
+        return rs.getLong(USER_ID_COLUMN);
     }
 }

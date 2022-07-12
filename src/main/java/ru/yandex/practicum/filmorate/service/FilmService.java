@@ -3,60 +3,54 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.dao.FilmStorageDao;
-import ru.yandex.practicum.filmorate.storage.dao.GenreDao;
-import ru.yandex.practicum.filmorate.storage.dao.LikesDao;
-import ru.yandex.practicum.filmorate.storage.dao.MpaRatingDao;
+import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
+import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
 
 import java.util.List;
 
 @Service
 public class FilmService {
 
-    private final FilmStorageDao filmStorageDao;
-    private final LikesDao likesDao;
-    private final GenreDao genreDao;
+    private final FilmDao filmDao;
+    private final LikeDao likeDao;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorageDaoImpl") FilmStorageDao filmStorageDao,
-                       LikesDao likesDao,
-                       GenreDao genreDao,
-                       MpaRatingDao mpaRatingDao) {
-        this.filmStorageDao = filmStorageDao;
-        this.likesDao = likesDao;
-        this.genreDao = genreDao;
+    public FilmService(@Qualifier("dbFilmDaoImpl") FilmDao filmDao,
+                       LikeDao likeDao) {
+        this.filmDao = filmDao;
+        this.likeDao = likeDao;
     }
 
     public Film add(Film film) throws InvalidFilmException {
-        return filmStorageDao.save(film);
+        return filmDao.save(film);
     }
 
-    public Film update(Film film) throws InvalidFilmException, FilmNotFoundException {
-        return filmStorageDao.update(film);
+    public Film update(Film film) throws InvalidFilmException, IllegalIdException {
+        return filmDao.update(film);
     }
 
     public List<Film> get() {
-        return filmStorageDao.findAll();
+        return filmDao.findAll();
     }
 
-    public Film getFilmById(long id) throws FilmNotFoundException {
-        return filmStorageDao.findFilmById(id).orElse(null);
+    public Film getFilmById(long id) throws IllegalIdException {
+        return filmDao.findFilmById(id).orElse(null);
     }
 
-    public void addLike(long filmId, long userId) throws FilmNotFoundException {
-        likesDao.addLike(filmId, userId);
+    public void addLike(long filmId, long userId) throws IllegalIdException {
+        likeDao.addLike(filmId, userId);
     }
 
-    public void deleteLike(long filmId, long userId) throws FilmNotFoundException {
-        likesDao.deleteLike(filmId, userId);
+    public void deleteLike(long filmId, long userId) throws IllegalIdException {
+        likeDao.deleteLike(filmId, userId);
     }
 
     public List<Film> getTopFilms(Integer count) {
-        List<Film> result = filmStorageDao.findAll();
-        result.sort((f1, f2) -> (likesDao.likesNumber(f2.getId()) - likesDao.likesNumber(f1.getId())));
+        List<Film> result = filmDao.findAll();
+        result.sort((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())));
 
         if (result.size() <= count) return result;
         return result.subList(0, count);

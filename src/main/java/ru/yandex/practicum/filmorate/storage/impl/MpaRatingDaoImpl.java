@@ -13,6 +13,9 @@ import java.util.List;
 @Component
 public class MpaRatingDaoImpl implements MpaRatingDao {
 
+    public static String MPA_NAME_COLUMN = "mpa_name";
+    public static String MPA_RATING_ID_COLUMN = "mpa_rating_id";
+
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -34,8 +37,8 @@ public class MpaRatingDaoImpl implements MpaRatingDao {
 
     private Mpa makeMpaRating(ResultSet rs, int rowNum) throws SQLException {
         return Mpa.builder()
-                .id(rs.getLong("mpa_rating_id"))
-                .name(rs.getString("mpa_name"))
+                .id(rs.getLong(MPA_RATING_ID_COLUMN))
+                .name(rs.getString(MPA_NAME_COLUMN))
                 .build();
     }
 }

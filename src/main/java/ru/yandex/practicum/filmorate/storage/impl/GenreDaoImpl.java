@@ -13,6 +13,9 @@ import java.util.List;
 @Component
 public class GenreDaoImpl implements GenreDao {
 
+    public String GENRE_ID_COLUMN = "genre_id";
+    public String GENRE_NAME_COLUMN = "genre_name";
+
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -34,8 +37,8 @@ public class GenreDaoImpl implements GenreDao {
 
     private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {
         return Genre.builder()
-                .id(rs.getLong("genre_id"))
-                .name(rs.getString("genre_name"))
+                .id(rs.getLong(GENRE_ID_COLUMN))
+                .name(rs.getString(GENRE_NAME_COLUMN))
                 .build();
     }
 }

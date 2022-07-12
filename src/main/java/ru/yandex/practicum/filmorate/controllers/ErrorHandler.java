@@ -18,26 +18,8 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handle(FilmNotFoundException e) {
-        return new ErrorResponse("Not found error", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handle(UserNotFoundException e) {
-        return new ErrorResponse("User not found error", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handle(MpaNotFoundException e) {
-        return new ErrorResponse("Mpa not found error", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handle(GenreNotFoundException e) {
-        return new ErrorResponse("Genre not found error", e.getMessage());
+    public ErrorResponse handle(IllegalIdException e) {
+        return new ErrorResponse("Illegal id error", e.getMessage());
     }
 
     @ExceptionHandler

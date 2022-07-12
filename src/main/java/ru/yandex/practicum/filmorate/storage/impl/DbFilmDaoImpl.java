@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.dao.FilmStorageDao;
+import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,20 +20,30 @@ import java.util.*;
 @Slf4j
 @Component
 @Qualifier("filmDbStorage")
-public class FilmDbStorageDaoImpl implements FilmStorageDao {
+public class DbFilmDaoImpl implements FilmDao {
+    public static String FILMS_TABLE = "FILMS";
+    public static String FILM_ID_COLUMN = "film_id";
+    public static String MPA_NAME_COLUMN = "mpa_name";
+    public static String DURATION_COLUMN = "duration";
+    public static String GENRE_ID_COLUMN = "genre_id";
+    public static String FILM_NAME_COLUMN = "film_name";
+    public static String GENRE_NAME_COLUMN = "genre_name";
+    public static String DESCRIPTION_COLUMN = "description";
+    public static String RELEASE_DATE_COLUMN = "release_date";
+    public static String MPA_RATING_ID_COLUMN = "mpa_rating_id";
 
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public FilmDbStorageDaoImpl(JdbcTemplate jdbcTemplate) {
+    public DbFilmDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     public Film save(Film film) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("FILMS")
-                .usingGeneratedKeyColumns("film_id")
+                .withTableName(FILMS_TABLE)
+                .usingGeneratedKeyColumns(FILM_ID_COLUMN)
         ;
         long id = simpleJdbcInsert.executeAndReturnKey(toMap(film)).longValue();
 
@@ -48,7 +58,7 @@ public class FilmDbStorageDaoImpl implements FilmStorageDao {
     }
 
     @Override
-    public Film update(Film film) throws InvalidFilmException, FilmNotFoundException {
+    public Film update(Film film) throws InvalidFilmException, IllegalIdException {
         String sqlQueryFilms =
                 "update FILMS set " +
                 "film_name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? " +
@@ -78,21 +88,21 @@ public class FilmDbStorageDaoImpl implements FilmStorageDao {
     }
 
     @Override
-    public Optional<Film> findFilmById(long id) throws FilmNotFoundException {
+    public Optional<Film> findFilmById(long id) throws IllegalIdException {
         String sqlQuery = "select * from FILMS where film_id = " + id;
         return Optional.of(jdbcTemplate.query(sqlQuery, this::makeFilm).get(0));
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
-        long filmId = rs.getLong("film_id");
+        long filmId = rs.getLong(FILM_ID_COLUMN);
         List<Genre> genres = findGenresByFilmId(filmId);
         return Film.builder()
                 .id(filmId)
-                .name(rs.getString("film_name"))
-                .description((rs.getString("description")))
-                .releaseDate(rs.getDate("release_date").toLocalDate())
-                .duration(rs.getLong("duration"))
-                .mpa(makeMpaById(rs.getLong("mpa_rating_id")))
+                .name(rs.getString(FILM_NAME_COLUMN))
+                .description((rs.getString(DESCRIPTION_COLUMN)))
+                .releaseDate(rs.getDate(RELEASE_DATE_COLUMN).toLocalDate())
+                .duration(rs.getLong(DURATION_COLUMN))
+                .mpa(makeMpaById(rs.getLong(MPA_RATING_ID_COLUMN)))
                 .genres(genres)
                 .build();
     }
@@ -116,15 +126,15 @@ public class FilmDbStorageDaoImpl implements FilmStorageDao {
     }
 
     private String makeMpaName(ResultSet rs) throws SQLException {
-        return rs.getString("mpa_name");
+        return rs.getString(MPA_NAME_COLUMN);
     }
 
     private String makeGenreName(ResultSet rs) throws SQLException {
-        return rs.getString("genre_name");
+        return rs.getString(GENRE_NAME_COLUMN);
     }
 
     private Long makeGenreId(ResultSet rs) throws SQLException {
-        return rs.getLong("genre_id");
+        return rs.getLong(GENRE_ID_COLUMN);
     }
 
     private List<Genre> findGenresByFilmId(long filmId) {
@@ -161,11 +171,11 @@ public class FilmDbStorageDaoImpl implements FilmStorageDao {
 
     private Map<String, Object> toMap(Film film) {
         Map<String, Object> values = new HashMap<>();
-        values.put("film_name", film.getName());
-        values.put("description", film.getDescription());
-        values.put("release_date", film.getReleaseDate());
-        values.put("duration", film.getDuration());
-        values.put("mpa_rating_id", film.getMpa().getId());
+        values.put(FILM_NAME_COLUMN, film.getName());
+        values.put(DESCRIPTION_COLUMN, film.getDescription());
+        values.put(RELEASE_DATE_COLUMN, film.getReleaseDate());
+        values.put(DURATION_COLUMN, film.getDuration());
+        values.put(MPA_RATING_ID_COLUMN, film.getMpa().getId());
         return values;
     }
 }

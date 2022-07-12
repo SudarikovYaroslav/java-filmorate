@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exceptions.MpaNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
@@ -19,12 +19,10 @@ public class MpaController {
 
     private final MpaService mpaService;
 
+    @Autowired
     public MpaController(MpaService mpaService) {
         this.mpaService = mpaService;
     }
-
-    @Autowired
-
 
     @GetMapping()
     public List<Mpa> getAllMpaRatings() {
@@ -38,6 +36,6 @@ public class MpaController {
     }
 
     private void checkId(long id) {
-        if (id < 0) throw new MpaNotFoundException("mpa id не может быть отрицательным");
+        if (id < 0) throw new IllegalIdException("mpa id не может быть отрицательным");
     }
 }

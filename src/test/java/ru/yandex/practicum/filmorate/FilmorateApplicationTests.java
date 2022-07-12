@@ -11,8 +11,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.impl.FilmDbStorageDaoImpl;
-import ru.yandex.practicum.filmorate.storage.impl.UserDbStorageDaoImpl;
+import ru.yandex.practicum.filmorate.storage.impl.DbFilmDaoImpl;
+import ru.yandex.practicum.filmorate.storage.impl.DbUserDaoImpl;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,8 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmorateApplicationTests {
 
-    private final UserDbStorageDaoImpl userStorage;
-    private final FilmDbStorageDaoImpl filmStorage;
+    private final DbUserDaoImpl userStorage;
+    private final DbFilmDaoImpl filmStorage;
 
     @Test
     public void testSaveUser() {

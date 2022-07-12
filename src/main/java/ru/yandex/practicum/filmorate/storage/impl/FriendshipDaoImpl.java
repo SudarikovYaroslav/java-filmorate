@@ -14,6 +14,8 @@ import java.util.List;
 @Component
 public class FriendshipDaoImpl implements FriendshipDao {
 
+    public static String FRIEND_ID_COLUMN = "friend_id";
+
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -42,7 +44,7 @@ public class FriendshipDaoImpl implements FriendshipDao {
     @Override
     public void deleteFriend(Long userId, Long friendId) {
         String sqlQuery = "delete from USER_FRIENDS where user_id = ? and friend_id = ?";
-        boolean result = jdbcTemplate.update(sqlQuery, userId, friendId) > 0;
+        jdbcTemplate.update(sqlQuery, userId, friendId);
         log.debug(String.format("пользователь id: %d удалён из друзей пользователя id: %d", friendId, userId));
     }
 
@@ -53,7 +55,7 @@ public class FriendshipDaoImpl implements FriendshipDao {
     }
 
     private Long makeId(ResultSet rs, int rowNum) throws SQLException {
-        return rs.getLong("friend_id");
+        return rs.getLong(FRIEND_ID_COLUMN);
     }
 
     /**

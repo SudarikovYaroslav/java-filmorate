@@ -8,6 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class FriendshipStatus {
-    private long status_id;
+    private long id;
     private String status;
 }
