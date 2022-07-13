@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.controllers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -73,6 +73,10 @@ public class UserController {
     protected void validate(User user) throws InvalidUserException {
         validateNotNull(user);
 
+        if(user.getId() < 0) {
+            throw new IllegalIdException("id пользователя не может быть отрицательным");
+        }
+
         if (user.getEmail() == null
                 || user.getLogin() == null
                 || user.getBirthday() == null
@@ -116,7 +120,7 @@ public class UserController {
 
     public void checkNegativeIds(long... ids) {
         for (long id : ids) {
-            if (id <= 0 ) throw new UserNotFoundException("user id:" + id + " не найден");
+            if (id <= 0 ) throw new IllegalIdException("user id:" + id + " отрицательный");
         }
     }
 }

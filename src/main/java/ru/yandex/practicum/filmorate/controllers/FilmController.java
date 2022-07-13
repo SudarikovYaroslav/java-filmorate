@@ -3,9 +3,8 @@ package ru.yandex.practicum.filmorate.controllers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -17,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    public static final int TOP_FILMS_DEFAULT_COUNT = 10;
+    public static final String TOP_FILMS_COUNT = "10";
     public static final long MAX_FILM_DESCRIPTION_LENGTH = 200L;
     public static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
@@ -53,7 +52,7 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable long id, @PathVariable long userId)
-            throws FilmNotFoundException, UserNotFoundException {
+            throws IllegalIdException {
         checkFilmId(id);
         checkUserId(userId);
         filmService.addLike(id, userId);
@@ -61,19 +60,21 @@ public class FilmController {
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable long id, @PathVariable long userId)
-            throws FilmNotFoundException, UserNotFoundException {
+            throws IllegalIdException {
         checkFilmId(id);
         checkUserId(userId);
         filmService.deleteLike(id, userId);
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopFilms(@RequestParam(required = false) Integer count) {
-        return filmService.getTopFilms(count != null ? count : TOP_FILMS_DEFAULT_COUNT);
+    public List<Film> getTopFilms(@RequestParam(defaultValue = TOP_FILMS_COUNT) Integer count) {
+        return filmService.getTopFilms(count);
     }
 
     private void validate(Film film) throws InvalidFilmException {
         validateNotNull(film);
+
+        checkFilmId(film.getId());
 
         if (film.getName() == null) {
             String message = "Объект Film некорректно инициализирован, есть null поля! id: " + film.getId();
@@ -104,6 +105,10 @@ public class FilmController {
             log.warn(message);
             throw new InvalidFilmException(message);
         }
+
+        if (film.getMpa() == null) {
+            throw new InvalidFilmException(String.format("у фильма id: %d не установлен mpa", film.getId()));
+        }
     }
 
     private void validateNotNull(Film film) {
@@ -115,10 +120,10 @@ public class FilmController {
     }
 
     public void checkFilmId(long id) {
-        if (id <= 0 ) throw new FilmNotFoundException("film id:" + id + " не найден");
+        if (id < 0 ) throw new IllegalIdException("film id:" + id + " отрицательный");
     }
 
     public void checkUserId(long id) {
-        if (id <= 0) throw new UserNotFoundException("user id: " + id + " не найден");
+        if (id < 0) throw new IllegalIdException("user id: " + id + " отрицательный");
     }
 }
