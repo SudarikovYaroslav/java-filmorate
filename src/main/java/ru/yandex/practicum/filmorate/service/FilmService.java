@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -9,10 +10,15 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 
+@Slf4j
 @Service
 public class FilmService {
+    public static final long MAX_FILM_DESCRIPTION_LENGTH = 200L;
+    public static final LocalDate FIRST_FILM_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
     private final FilmDao filmDao;
     private final LikeDao likeDao;
@@ -25,10 +31,12 @@ public class FilmService {
     }
 
     public Film add(Film film) throws InvalidFilmException {
+        validate(film);
         return filmDao.save(film);
     }
 
     public Film update(Film film) throws InvalidFilmException, IllegalIdException {
+        validate(film);
         return filmDao.update(film);
     }
 
@@ -37,14 +45,19 @@ public class FilmService {
     }
 
     public Film getFilmById(long id) throws IllegalIdException {
+        checkFilmId(id);
         return filmDao.findFilmById(id).orElse(null);
     }
 
     public void addLike(long filmId, long userId) throws IllegalIdException {
+        checkFilmId(filmId);
+        checkUserId(userId);
         likeDao.addLike(filmId, userId);
     }
 
     public void deleteLike(long filmId, long userId) throws IllegalIdException {
+        checkFilmId(filmId);
+        checkUserId(userId);
         likeDao.deleteLike(filmId, userId);
     }
 
@@ -54,5 +67,61 @@ public class FilmService {
 
         if (result.size() <= count) return result;
         return result.subList(0, count);
+    }
+
+    private void validate(Film film) throws InvalidFilmException {
+        validateNotNull(film);
+
+        checkFilmId(film.getId());
+
+        if (film.getName() == null) {
+            String message = "Объект Film некорректно инициализирован, есть null поля! id: " + film.getId();
+            log.warn(message);
+            throw new InvalidFilmException(message);
+        }
+
+        if (film.getName().isBlank()) {
+            String message = "Пустое имя фильма при инициализации id: " + film.getId();
+            log.warn(message);
+            throw  new InvalidFilmException(message);
+        }
+
+        if (film.getDescription() != null && film.getDescription().length() > MAX_FILM_DESCRIPTION_LENGTH) {
+            String message = "Описание длиннее " + MAX_FILM_DESCRIPTION_LENGTH + " id: " + film.getId();
+            log.warn(message);
+            throw new InvalidFilmException(message);
+        }
+
+        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(FIRST_FILM_BIRTHDAY)) {
+            String message = "Дата релиза раньше ДР кино:" + FIRST_FILM_BIRTHDAY + " id: " + film.getId();
+            log.warn(message);
+            throw new InvalidFilmException(message);
+        }
+
+        if (film.getDuration() < 0) {
+            String message = "Отрицательная продолжительность фильма  id: " + film.getId();
+            log.warn(message);
+            throw new InvalidFilmException(message);
+        }
+
+        if (film.getMpa() == null) {
+            throw new InvalidFilmException(String.format("у фильма id: %d не установлен mpa", film.getId()));
+        }
+    }
+
+    private void validateNotNull(Film film) {
+        if (film == null) {
+            String message = "Передан null film";
+            log.warn(message);
+            throw new IllegalStateException(message);
+        }
+    }
+
+    public void checkFilmId(long id) {
+        if (id < 0 ) throw new IllegalIdException("film id:" + id + " отрицательный");
+    }
+
+    public void checkUserId(long id) {
+        if (id < 0) throw new IllegalIdException("user id: " + id + " отрицательный");
     }
 }
