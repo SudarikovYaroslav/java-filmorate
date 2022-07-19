@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.dao.MpaRatingDao;
 
@@ -23,11 +22,6 @@ public class MpaService {
     }
 
     public Mpa findMpaRatingById(long id) {
-        checkId(id);
         return mpaRatingDao.findMpaRatingById(id);
-    }
-
-    private void checkId(long id) {
-        if (id < 0) throw new IllegalIdException("mpa id не может быть отрицательным");
     }
 }

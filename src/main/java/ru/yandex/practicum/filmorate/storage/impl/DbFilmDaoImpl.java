@@ -90,19 +90,7 @@ public class DbFilmDaoImpl implements FilmDao {
     @Override
     public Optional<Film> findFilmById(long id) throws IllegalIdException {
         String sqlQuery = "select * from FILMS where film_id = " + id;
-
-        Film film = jdbcTemplate.query(sqlQuery, rs -> rs.next() ? makeFilm(rs, 0) : null);
-        if (film == null) {
-            throw new IllegalIdException(String.format("Фильм %d не найден", id));
-        }
-        return Optional.of(film);
-    }
-
-    @Override
-    public void deleteFilmById(Long filmId) {
-        String sqlQuery = "delete from FILMS where film_id = ?;";
-        jdbcTemplate.update(sqlQuery, filmId);
-        log.debug("Удален фильм id: " + filmId);
+        return Optional.of(jdbcTemplate.query(sqlQuery, this::makeFilm).get(0));
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {

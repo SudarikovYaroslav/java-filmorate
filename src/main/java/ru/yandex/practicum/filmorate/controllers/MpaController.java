@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
@@ -30,6 +31,11 @@ public class MpaController {
 
     @GetMapping("/{id}")
     public Mpa getMpaRatingById(@PathVariable long id) {
+        checkId(id);
         return mpaService.findMpaRatingById(id);
+    }
+
+    private void checkId(long id) {
+        if (id < 0) throw new IllegalIdException("mpa id не может быть отрицательным");
     }
 }

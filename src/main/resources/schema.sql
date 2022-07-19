@@ -23,7 +23,7 @@ create table if not exists FILMS (
 );
 
 create table if not exists FILM_GENRES (
-    film_id  int not null references FILMS (film_id) on delete cascade,
+    film_id  int not null references FILMS (film_id),
     genre_id int not null references GENRES (genre_id),
     PRIMARY KEY (film_id, genre_id)
 );
@@ -37,14 +37,14 @@ create table if not exists USERS(
 );
 
 create table if not exists USER_FRIENDS (
-    user_id int references USERS (user_id) on delete cascade,
-    friend_id int references USERS (user_id) on delete cascade,
+    user_id int references USERS (user_id),
+    friend_id int references USERS (user_id),
     friendship_status_id int references FRIENDSHIP_STATUSES (friendship_status_id),
     PRIMARY KEY (user_id, friend_id)
 );
 
 create table if not exists LIKES (
-    film_id int references FILMS (film_id) on delete cascade,
-    user_id int references USERS (user_id) on delete cascade,
+    film_id int references FILMS (film_id),
+    user_id int references USERS (user_id),
     primary key (film_id, user_id)
 );

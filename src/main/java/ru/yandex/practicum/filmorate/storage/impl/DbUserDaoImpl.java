@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
@@ -78,19 +77,7 @@ public class DbUserDaoImpl implements UserDao {
     @Override
     public Optional<User> findUserById(long id) {
         String sqlQuery = "select * from USERS where user_id = " + id;
-
-        User user = jdbcTemplate.query(sqlQuery, rs -> rs.next() ? makeUser(rs, 0) : null);
-        if (user == null) {
-            throw new IllegalIdException(String.format("Пользователь %d не найден", id));
-        }
-        return Optional.of(user);
-    }
-
-    @Override
-    public void deleteUserById(Long userId) {
-        String sqlQuery = "delete from USERS where user_id = ?;";
-        jdbcTemplate.update(sqlQuery, userId);
-        log.debug("Удален пользователь id: " + userId);
+        return Optional.of(jdbcTemplate.query(sqlQuery, this::makeUser).get(0));
     }
 
     private Map<Long, FriendshipStatus> findFriendsWithFriendshipById(long userId) {

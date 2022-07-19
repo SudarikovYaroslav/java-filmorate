@@ -16,6 +16,4 @@ public interface FilmDao {
     List<Film> findAll();
 
     Optional<Film> findFilmById(long id) throws IllegalIdException;
-
-    void deleteFilmById(Long filmId);
 }
