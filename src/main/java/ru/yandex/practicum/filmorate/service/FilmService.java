@@ -69,6 +69,11 @@ public class FilmService {
         return result.subList(0, count);
     }
 
+    public void deleteFilmById(Long filmId) {
+        checkFilmId(filmId);
+        filmDao.deleteFilmById(filmId);
+    }
+
     private void validate(Film film) throws InvalidFilmException {
         validateNotNull(film);
 
