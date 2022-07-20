@@ -46,7 +46,6 @@ public class UserService {
         checkNegativeIds(id);
         return userDao.findUserById(id)
                 .orElseThrow(() -> new IllegalIdException(String.format("Пользователь %d не найден", id)));
-        //userDao.findUserById(id).orElse(null);
     }
 
     public void addFriend(long userId, long friendId) {
