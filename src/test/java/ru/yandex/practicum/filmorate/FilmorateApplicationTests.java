@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -67,6 +69,19 @@ class FilmorateApplicationTests {
     }
 
     @Test
+    public void deleteUserById() {
+        userStorage.save(generateUser());
+        userStorage.deleteUserById(1L);
+        final IllegalIdException exception = assertThrows(IllegalIdException.class, () -> {
+            userStorage.findUserById(1);
+        });
+        assertEquals(
+                "Пользователь 1 не найден",
+                exception.getMessage()
+        );
+    }
+
+    @Test
     public void testSaveFilm() {
         filmStorage.save(generateFilm());
         Optional<Film> filmOptional = filmStorage.findFilmById(1);
@@ -92,6 +107,19 @@ class FilmorateApplicationTests {
         filmStorage.save(generateFilm());
         Optional<Film> filmOptional = filmStorage.findFilmById(1);
         filmOptional.ifPresent(value -> assertEquals(1, value.getId()));
+    }
+
+    @Test
+    public void deleteFilmById() {
+        filmStorage.save(generateFilm());
+        filmStorage.deleteFilmById(1L);
+        final IllegalIdException exception = assertThrows(IllegalIdException.class, () -> {
+            filmStorage.findFilmById(1);
+        });
+        assertEquals(
+                "Фильм 1 не найден",
+                exception.getMessage()
+        );
     }
 
     private User generateUser() {
