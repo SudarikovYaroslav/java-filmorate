@@ -74,6 +74,11 @@ public class FilmService {
         filmDao.deleteFilmById(filmId);
     }
 
+    public List<Film> getDirectorFilms(long directorId, String sortBy) {
+        checkDirectorId(directorId);
+        return filmDao.getDirectorFilms(directorId, sortBy);
+    }
+
     private void validate(Film film) throws InvalidFilmException {
         validateNotNull(film);
 
@@ -128,5 +133,9 @@ public class FilmService {
 
     public void checkUserId(long id) {
         if (id < 0) throw new IllegalIdException("user id: " + id + " отрицательный");
+    }
+
+    public void checkDirectorId(long id) {
+        if (id < 0 ) throw new IllegalIdException("director id: " + id + " отрицательный");
     }
 }

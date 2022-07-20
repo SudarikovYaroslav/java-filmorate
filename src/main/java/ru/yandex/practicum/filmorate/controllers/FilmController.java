@@ -13,6 +13,7 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
     public static final String TOP_FILMS_COUNT = "10";
+    public static final String DEFAULT_SORT = "year";
 
     private final FilmService filmService;
 
@@ -39,6 +40,12 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable long id) {
         return filmService.getFilmById(id);
+    }
+
+    @GetMapping("/director/{directorId}?sortBy=[year,likes]")
+    public List<Film> getDirectorFilms(@PathVariable long directorId,
+                                       @RequestParam(defaultValue = DEFAULT_SORT) String sortBy) {
+        return filmService.getDirectorFilms(directorId, sortBy);
     }
 
     @PutMapping("/{id}/like/{userId}")

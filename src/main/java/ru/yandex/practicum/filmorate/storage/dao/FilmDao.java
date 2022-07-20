@@ -17,5 +17,9 @@ public interface FilmDao {
 
     Optional<Film> findFilmById(long id) throws IllegalIdException;
 
+<<<<<<< HEAD
     void deleteFilmById(Long filmId);
+=======
+    List<Film> getDirectorFilms(long directorId, String sortBy);
+>>>>>>> 26cf5ce (feat: добавлены режиссёры, но нужна отладка)
 }
