@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import ru.yandex.practicum.filmorate.storage.dao.LikeReviewsDao;
 import ru.yandex.practicum.filmorate.storage.dao.ReviewDao;
+import ru.yandex.practicum.filmorate.storage.dao.UserDao;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,15 +17,14 @@ import java.util.stream.Collectors;
 public class ReviewService {
 
     private final ReviewDao reviewDao;
-    private final UserService userService;
-    private final FilmService filmService;
+    private final UserDao userDao;
+    private final FilmDao filmDao;
     private final LikeReviewsDao likeReviewsDao;
 
-    public ReviewService(ReviewDao reviewDao, UserService userService, FilmService filmService,
-                         LikeReviewsDao likeReviewsDao) {
+    public ReviewService(ReviewDao reviewDao, UserDao userDao, FilmDao filmDao, LikeReviewsDao likeReviewsDao) {
         this.reviewDao = reviewDao;
-        this.userService = userService;
-        this.filmService = filmService;
+        this.userDao = userDao;
+        this.filmDao = filmDao;
         this.likeReviewsDao = likeReviewsDao;
     }
 
@@ -55,8 +56,8 @@ public class ReviewService {
         if (review.getUserId() == null || review.getFilmId() == null){
             throw new IllegalStateException("Не заполнены поля filmId или userId");
         }
-        else if ((userService.getUserById(review.getUserId()) != null)
-                && (filmService.getFilmById(review.getFilmId()) != null)) {
+        else if ((userDao.findUserById(review.getUserId()).isPresent())
+                && (filmDao.findFilmById(review.getFilmId()).isPresent())) {
             Review newReview = reviewDao.save(review);
             newReview.setUseful(0);
             return newReview;
@@ -73,7 +74,7 @@ public class ReviewService {
             newReview.setUseful(rateReviews(review.getReviewId()));
             return newReview;
         } else {
-            throw new StorageException("Данного отзыва нет в БД");
+            throw new StorageException("Данного отзыва c Id = " + review.getReviewId() + " нет в БД");
         }
     }
 
@@ -83,7 +84,7 @@ public class ReviewService {
             review.setUseful(rateReviews(id));
             return review;
         } else {
-            throw new StorageException("Данного отзыва нет в БД");
+            throw new StorageException("Данного отзываc Id = " + id + " нет в БД");
         }
     }
 
@@ -92,7 +93,7 @@ public class ReviewService {
     }
 
     public void addLike(long reviewId, long userId) throws StorageException {
-        if (reviewDao.findReviewById(reviewId).isPresent() && userService.getUserById(userId) != null) {
+        if (reviewDao.findReviewById(reviewId).isPresent() && userDao.findUserById(userId).isPresent()) {
             likeReviewsDao.addLike(reviewId, userId);
         } else {
             throw new StorageException("Не удалось поставить лайк отзыву. Проверьте корректность" +
@@ -102,7 +103,7 @@ public class ReviewService {
     }
 
     public void addDislike(long reviewId, long userId) throws StorageException {
-        if (reviewDao.findReviewById(reviewId).isPresent() && userService.getUserById(userId) != null) {
+        if (reviewDao.findReviewById(reviewId).isPresent() && userDao.findUserById(userId).isPresent()) {
             likeReviewsDao.addDislike(reviewId, userId);
         } else {
             throw new StorageException("Не удалось поставить дизлайк отзыву. Проверьте корректность" +

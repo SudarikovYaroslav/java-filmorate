@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.storage.impl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.dao.ReviewDao;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-@Component
+@Repository
 public class DbReviewDaoImpl implements ReviewDao {
 
     private final JdbcTemplate jdbcTemplate;
@@ -26,12 +26,7 @@ public class DbReviewDaoImpl implements ReviewDao {
     }
 
     private Review makeReview(ResultSet rs, int rowNum) throws SQLException {
-        return new Review(rs.getLong("review_id"),
-                rs.getString("content"),
-                rs.getBoolean("positive_status"),
-                rs.getLong("user_id"),
-                rs.getLong("film_id"),
-                0);
+        return new Review(rs.getLong("review_id"), rs.getString("content"), rs.getBoolean("positive_status"), rs.getLong("user_id"), rs.getLong("film_id"), 0);
     }
 
     @Override
@@ -52,9 +47,7 @@ public class DbReviewDaoImpl implements ReviewDao {
 
     @Override
     public Review update(Review review) {
-        String sqlQuery = "update REVIEWS set " +
-                "content = ?, positive_status = ? " +
-                "where review_id = ?";
+        String sqlQuery = "update REVIEWS set " + "content = ?, positive_status = ? " + "where review_id = ?";
         jdbcTemplate.update(sqlQuery
                 , review.getContent()
                 , review.getIsPositive()
@@ -71,7 +64,7 @@ public class DbReviewDaoImpl implements ReviewDao {
     @Override
     public Optional<Review> findReviewById(long id) {
         String sqlQuery = "select * from REVIEWS where review_id = ?";
-        List<Review> reviews =  jdbcTemplate.query(sqlQuery, this::makeReview, id);
+        List<Review> reviews = jdbcTemplate.query(sqlQuery, this::makeReview, id);
         if (reviews.size() != 1) {
             throw new StorageException("Отзыва с таким id нет в базе данных");
         }
@@ -86,8 +79,7 @@ public class DbReviewDaoImpl implements ReviewDao {
 
     @Override
     public Collection<Review> findReviewsByFilmId(long filmId) {
-        String sqlQuery = "select * from REVIEWS "+
-                "where FILM_ID = ?";
+        String sqlQuery = "select * from REVIEWS " + "where FILM_ID = ?";
         return jdbcTemplate.query(sqlQuery, this::makeReview, filmId);
     }
 }

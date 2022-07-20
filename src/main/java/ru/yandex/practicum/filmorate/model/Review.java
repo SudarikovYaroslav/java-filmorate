@@ -7,6 +7,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class Review {
     private long reviewId;
     private String content;
@@ -16,15 +17,6 @@ public class Review {
     @NonNull
     private Long filmId;
     private Integer useful;
-
-    public Review(long reviewId, String content, Boolean isPositive, Long userId, Long filmId, Integer useful) {
-        this.reviewId = reviewId;
-        this.content = content;
-        this.isPositive = isPositive;
-        this.userId = userId;
-        this.filmId = filmId;
-        this.useful = useful;
-    }
 
     @Override
     public boolean equals(Object o) {

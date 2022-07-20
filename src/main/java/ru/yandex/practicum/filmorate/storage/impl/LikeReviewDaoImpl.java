@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.storage.dao.LikeReviewsDao;
 
-@Component
+@Repository
 public class LikeReviewDaoImpl implements LikeReviewsDao {
 
     private final JdbcTemplate jdbcTemplate;
@@ -45,7 +45,6 @@ public class LikeReviewDaoImpl implements LikeReviewsDao {
         String sqlQuery = "delete FROM LIKES_REVIEWS where review_id = ? and user_id = ? and like_dislike = ?";
         jdbcTemplate.update(sqlQuery, reviewId, userId, -1);
     }
-
 
     @Override
     public Integer likesNumber(long reviewId) {
