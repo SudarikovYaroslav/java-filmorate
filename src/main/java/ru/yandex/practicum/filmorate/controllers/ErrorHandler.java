@@ -33,4 +33,13 @@ public class ErrorHandler {
     public ErrorResponse handle(Exception e) {
         return new ErrorResponse("Internal server error", e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleStorageException(final StorageException e) {
+        return new ErrorResponse( "NOT_FOUND",
+                e.getMessage()
+        );
+    }
+
 }
