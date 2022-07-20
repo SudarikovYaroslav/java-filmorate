@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -29,8 +30,10 @@ public class DbFilmDaoImpl implements FilmDao {
     public static String FILM_NAME_COLUMN = "film_name";
     public static String GENRE_NAME_COLUMN = "genre_name";
     public static String DESCRIPTION_COLUMN = "description";
+    public static String DIRECTOR_ID_COLUMN = "director_id";
     public static String RELEASE_DATE_COLUMN = "release_date";
     public static String MPA_RATING_ID_COLUMN = "mpa_rating_id";
+    public static String DIRECTOR_NAME_COLUMN = "director_name";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -43,8 +46,7 @@ public class DbFilmDaoImpl implements FilmDao {
     public Film save(Film film) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName(FILMS_TABLE)
-                .usingGeneratedKeyColumns(FILM_ID_COLUMN)
-        ;
+                .usingGeneratedKeyColumns(FILM_ID_COLUMN);
         long id = simpleJdbcInsert.executeAndReturnKey(toMap(film)).longValue();
 
         Mpa mpa = makeMpaById(film.getMpa().getId());
@@ -53,6 +55,10 @@ public class DbFilmDaoImpl implements FilmDao {
 
         if (film.getGenres() != null) fillFilmGenresTable(film);
         film.setGenres(findGenresByFilmId(id));
+
+        if (film.getDirectors() != null) fillFilmDirectorsTable(film);
+        film.setDirectors(findDirectorsByFilmId(id));
+
         log.debug("Сохранён фильм id: " + id);
         return film;
     }
@@ -77,6 +83,13 @@ public class DbFilmDaoImpl implements FilmDao {
         Mpa mpa = makeMpaById(film.getMpa().getId());
         film.setMpa(mpa);
         film.setGenres(findGenresByFilmId(film.getId()));
+
+        updateFilmDirectorsTable(film);
+        if (film.getDirectors() != null) {
+            film.setDirectors(findDirectorsByFilmId(film.getId()));
+            if (film.getDirectors().isEmpty()) film.setDirectors(null);
+        }
+
         log.info("Обновлён фильм id: " + film.getId());
         return film;
     }
@@ -105,9 +118,49 @@ public class DbFilmDaoImpl implements FilmDao {
         log.debug("Удален фильм id: " + filmId);
     }
 
+    /**
+     * Если в sortBy передано "likes", отсортирует все фильмы режиссёра по количеству лайков в порядке убывания,
+     * в противном случае по дате релиза фильма от поздних к ранним (сортировка по умолчанию)
+     */
+    @Override
+    public List<Film> getDirectorFilms(long directorId, String sortBy) {
+        List<Film> result = new ArrayList<>();
+        String sqlQuery;
+
+        if (sortBy.equals("likes")) {
+            sqlQuery = "select FD.FILM_ID from FILM_DIRECTORS as FD " +
+                    "left join LIKES L on FD.FILM_ID = L.FILM_ID " +
+                    "where DIRECTOR_ID = ? " +
+                    "group by FD.FILM_ID " +
+                    "ORDER BY COUNT(USER_ID);";
+
+        } else {
+            sqlQuery = "select FD.FILM_ID from FILM_DIRECTORS as FD " +
+                    "join FILMS F on FD.FILM_ID = F.FILM_ID " +
+                    "WHERE DIRECTOR_ID = ? " +
+                    "order by RELEASE_DATE;";
+        }
+
+        List<Long> filmsId = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilmId(rs), directorId);
+
+        for (Long filmId : filmsId) {
+            Film film = findFilmById(filmId).isPresent() ? findFilmById(filmId).get() : null;
+            if (film != null) {
+                if (film.getGenres().isEmpty()) film.setGenres(null);
+                result.add(film);
+            }
+        }
+        return result;
+    }
+
+    private long makeFilmId(ResultSet rs) throws SQLException {
+        return rs.getLong("film_id");
+    }
+
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         long filmId = rs.getLong(FILM_ID_COLUMN);
         List<Genre> genres = findGenresByFilmId(filmId);
+        List<Director> directors = findDirectorsByFilmId(filmId);
         return Film.builder()
                 .id(filmId)
                 .name(rs.getString(FILM_NAME_COLUMN))
@@ -116,6 +169,7 @@ public class DbFilmDaoImpl implements FilmDao {
                 .duration(rs.getLong(DURATION_COLUMN))
                 .mpa(makeMpaById(rs.getLong(MPA_RATING_ID_COLUMN)))
                 .genres(genres)
+                .directors(directors)
                 .build();
     }
 
@@ -137,6 +191,15 @@ public class DbFilmDaoImpl implements FilmDao {
                 .build();
     }
 
+    private Director makeDirectorById(long directorId) {
+        String sqlQuery = "select director_name from DIRECTORS where director_id = ?";
+        String directorName = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirectorName(rs), directorId).get(0);
+        return Director.builder()
+                .id(directorId)
+                .name(directorName)
+                .build();
+    }
+
     private String makeMpaName(ResultSet rs) throws SQLException {
         return rs.getString(MPA_NAME_COLUMN);
     }
@@ -145,8 +208,16 @@ public class DbFilmDaoImpl implements FilmDao {
         return rs.getString(GENRE_NAME_COLUMN);
     }
 
+    private String makeDirectorName(ResultSet rs) throws SQLException {
+        return rs.getString(DIRECTOR_NAME_COLUMN);
+    }
+
     private Long makeGenreId(ResultSet rs) throws SQLException {
         return rs.getLong(GENRE_ID_COLUMN);
+    }
+
+    private Long makeDirectorId(ResultSet rs) throws SQLException {
+        return rs.getLong(DIRECTOR_ID_COLUMN);
     }
 
     private List<Genre> findGenresByFilmId(long filmId) {
@@ -156,6 +227,17 @@ public class DbFilmDaoImpl implements FilmDao {
 
         for (long genreId : genresId) {
             result.add(makeGenreById(genreId));
+        }
+        return result;
+    }
+
+    private List<Director> findDirectorsByFilmId(long filmId) {
+        String sqlQuery = "select director_id from FILM_DIRECTORS where film_id = ?";
+        List<Long> directorsId = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirectorId(rs), filmId);
+        List<Director> result = new ArrayList<>();
+
+        for (long directorId : directorsId) {
+            result.add(makeDirectorById(directorId));
         }
         return result;
     }
@@ -171,13 +253,34 @@ public class DbFilmDaoImpl implements FilmDao {
         }
     }
 
+    private void fillFilmDirectorsTable(Film film) {
+        String sql = "merge into FILM_DIRECTORS (film_id, director_id) " +
+                "values (?,?)";
+
+        for (Director director : film.getDirectors()) {
+            jdbcTemplate.update(sql,
+                    film.getId(),
+                    director.getId());
+        }
+    }
+
     private void updateFilmGenresTable(Film film) {
         cleanOldFilmGenresRecords(film);
         fillFilmGenresTable(film);
     }
 
+    private void updateFilmDirectorsTable(Film film) {
+        cleanOldFilmDirectorsRecords(film);
+        fillFilmDirectorsTable(film);
+    }
+
     public void cleanOldFilmGenresRecords(Film film) {
         String sqlQuery = "delete from FILM_GENRES where film_id = ?";
+        jdbcTemplate.update(sqlQuery, film.getId());
+    }
+
+    public void cleanOldFilmDirectorsRecords(Film film) {
+        String sqlQuery = "delete from FILM_DIRECTORS where film_id = ?";
         jdbcTemplate.update(sqlQuery, film.getId());
     }
 

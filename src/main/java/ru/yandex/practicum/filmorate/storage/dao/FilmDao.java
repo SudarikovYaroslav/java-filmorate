@@ -18,4 +18,6 @@ public interface FilmDao {
     Optional<Film> findFilmById(long id) throws IllegalIdException;
 
     void deleteFilmById(Long filmId);
+
+    List<Film> getDirectorFilms(long directorId, String sortBy);
 }
