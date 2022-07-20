@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.dao.DirectorDao;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
 
@@ -22,12 +23,14 @@ public class FilmService {
 
     private final FilmDao filmDao;
     private final LikeDao likeDao;
+    private final DirectorService directorService;
 
     @Autowired
     public FilmService(@Qualifier("dbFilmDaoImpl") FilmDao filmDao,
-                       LikeDao likeDao) {
+                       LikeDao likeDao, DirectorService directorService) {
         this.filmDao = filmDao;
         this.likeDao = likeDao;
+        this.directorService = directorService;
     }
 
     public Film add(Film film) throws InvalidFilmException {
@@ -76,6 +79,7 @@ public class FilmService {
 
     public List<Film> getDirectorFilms(long directorId, String sortBy) {
         checkDirectorId(directorId);
+        directorService.checkIfDirectorExists(directorId);
         return filmDao.getDirectorFilms(directorId, sortBy);
     }
 

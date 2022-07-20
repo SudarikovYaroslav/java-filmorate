@@ -84,8 +84,11 @@ public class DbFilmDaoImpl implements FilmDao {
         film.setMpa(mpa);
         film.setGenres(findGenresByFilmId(film.getId()));
 
-        if (film.getDirectors() != null) updateFilmDirectorsTable(film);
-        film.setDirectors(findDirectorsByFilmId(film.getId()));
+        updateFilmDirectorsTable(film);
+        if (film.getDirectors() != null) {
+            film.setDirectors(findDirectorsByFilmId(film.getId()));
+            if (film.getDirectors().isEmpty()) film.setDirectors(null);
+        }
 
         log.info("Обновлён фильм id: " + film.getId());
         return film;
@@ -115,6 +118,7 @@ public class DbFilmDaoImpl implements FilmDao {
         log.debug("Удален фильм id: " + filmId);
     }
 
+    // todo работает с ошибкой
     /**
      * Если в sortBy передано "likes", отсортирует все фильмы режиссёра по количеству лайков в порядке убывания,
      * в противном случае по дате релиза фильма от поздних к ранним (сортировка по умолчанию)
@@ -126,19 +130,26 @@ public class DbFilmDaoImpl implements FilmDao {
 
         if (sortBy.equals("likes")) {
             sqlQuery = "select FD.FILM_ID from FILM_DIRECTORS as FD " +
-                    "join LIKES as L on FD.FILM_ID = L.FILM_ID where DIRECTOR_ID = ? " +
-                    "order by count(USER_ID) desc";
+                    "left join LIKES L on FD.FILM_ID = L.FILM_ID " +
+                    "where DIRECTOR_ID = ? " +
+                    "group by FD.FILM_ID " +
+                    "ORDER BY COUNT(USER_ID);";
 
         } else {
             sqlQuery = "select FD.FILM_ID from FILM_DIRECTORS as FD " +
-                    "join FILMS F on FD.FILM_ID = F.FILM_ID where DIRECTOR_ID = ? " +
-                    "order by RELEASE_DATE desc";
+                    "join FILMS F on FD.FILM_ID = F.FILM_ID " +
+                    "WHERE DIRECTOR_ID = ? " +
+                    "order by RELEASE_DATE;";
         }
 
         List<Long> filmsId = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilmId(rs), directorId);
 
         for (Long filmId : filmsId) {
-            findFilmById(filmId).ifPresent(result::add);
+            Film film = findFilmById(filmId).isPresent() ? findFilmById(filmId).get() : null;
+            if (film != null) {
+                if (film.getGenres().isEmpty()) film.setGenres(null);
+                result.add(film);
+            }
         }
         return result;
     }

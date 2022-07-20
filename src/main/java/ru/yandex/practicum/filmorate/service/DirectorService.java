@@ -60,7 +60,7 @@ public class DirectorService {
         if (id < 0) throw new IllegalIdException("У режиссёра не может быть отрицательный id");
     }
 
-    private void checkIfDirectorExists(long directorId) {
+    public void checkIfDirectorExists(long directorId) {
         getDirectorById(directorId);
     }
 }
