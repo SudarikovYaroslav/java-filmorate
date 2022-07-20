@@ -20,4 +20,8 @@ public interface FilmDao {
     void deleteFilmById(Long filmId);
 
     List<Film> getDirectorFilms(long directorId, String sortBy);
+
+    List<Film> findAllFavoriteMovies(Long id);
+
+    List<Film> recommendationsFilm(Long id);
 }

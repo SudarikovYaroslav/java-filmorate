@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -62,5 +63,10 @@ public class UserController {
     @DeleteMapping(value = "/{userId}")
     public void deleteUserById(@PathVariable Long userId) {
         userService.deleteUserById(userId);
+    }
+
+    @GetMapping(value = "/{id}/recommendations")
+    public List<Film> recommendationsFilm(@PathVariable Long id) {
+        return userService.recommendationsFilms(id);
     }
 }
