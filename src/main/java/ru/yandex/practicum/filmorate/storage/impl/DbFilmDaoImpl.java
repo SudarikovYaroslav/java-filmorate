@@ -103,6 +103,24 @@ public class DbFilmDaoImpl implements FilmDao {
     }
 
     @Override
+    public List<Film> searchFilms(String query, String directorAndTitle) {
+        String[] splitedRequest = directorAndTitle.split(",");
+        switch (splitedRequest.length) {
+            case (1):
+                if (splitedRequest[0].equals("title")) {
+                    return getFilmsByPartOfTitle(query);
+                }
+                return getFilmsByPartOfDirectorName(query);
+            case (2):
+                List<Film> filmsWithSearchedNames = getFilmsByPartOfTitle(query);
+                List<Film> filmsWithSearchedDirectors = getFilmsByPartOfDirectorName(query);
+                filmsWithSearchedNames.addAll(filmsWithSearchedDirectors);
+                return filmsWithSearchedNames;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public void deleteFilmById(Long filmId) {
         String sqlQuery = "delete from FILMS where film_id = ?;";
         jdbcTemplate.update(sqlQuery, filmId);
@@ -295,6 +313,22 @@ public class DbFilmDaoImpl implements FilmDao {
     public void cleanOldFilmDirectorsRecords(Film film) {
         String sqlQuery = "delete from FILM_DIRECTORS where film_id = ?";
         jdbcTemplate.update(sqlQuery, film.getId());
+    }
+
+
+    private List<Film> getFilmsByPartOfTitle(String filmNamePart) {
+        String sqlForFilmsWithSearchedNames = "SELECT * FROM FILMS WHERE LCASE(FILM_NAME) " +
+                "LIKE '%" + filmNamePart.toLowerCase() + "%'";
+        return jdbcTemplate.query(sqlForFilmsWithSearchedNames, this::makeFilm);
+
+    }
+
+    private List<Film> getFilmsByPartOfDirectorName(String directorNamePart) {
+        String sqlForFilmsWithSearchedDirectors = "SELECT * FROM FILMS WHERE FILM_ID IN " +
+                "(SELECT FILM_ID FROM FILM_DIRECTORS " +
+                "where DIRECTOR_ID IN (SELECT DIRECTORS.DIRECTOR_ID FROM DIRECTORS " +
+                "where LCASE(DIRECTOR_NAME) like '%" + directorNamePart.toLowerCase() + "%'))";
+        return jdbcTemplate.query(sqlForFilmsWithSearchedDirectors, this::makeFilm);
     }
 
     private Map<String, Object> toMap(Film film) {

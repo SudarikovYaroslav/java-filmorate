@@ -24,4 +24,6 @@ public interface FilmDao {
     List<Film> findAllFavoriteMovies(Long id);
 
     List<Film> recommendationsFilm(Long id);
+
+    List<Film> searchFilms(String query, String directorAndTitle);
 }

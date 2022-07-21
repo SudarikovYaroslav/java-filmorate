@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -68,5 +69,10 @@ public class FilmController {
     @DeleteMapping(value = "/{filmId}")
     public void deleteFilmById(@PathVariable Long filmId) {
         filmService.deleteFilmById(filmId);
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilms(HttpServletRequest request) {
+        return filmService.searchFilms(request.getParameter("query"), request.getParameter("by"));
     }
 }
