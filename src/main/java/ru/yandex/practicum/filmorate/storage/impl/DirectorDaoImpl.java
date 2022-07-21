@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.dao.DirectorDao;
 
@@ -16,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
-@Component
+@Repository
 public class DirectorDaoImpl implements DirectorDao {
 
     public static final String DIRECTOR_ID_COLUMN = "director_id";

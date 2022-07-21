@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -19,7 +19,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Slf4j
-@Component
+@Repository
 @Qualifier("filmDbStorage")
 public class DbFilmDaoImpl implements FilmDao {
     public static String FILMS_TABLE = "FILMS";
@@ -48,17 +48,13 @@ public class DbFilmDaoImpl implements FilmDao {
                 .withTableName(FILMS_TABLE)
                 .usingGeneratedKeyColumns(FILM_ID_COLUMN);
         long id = simpleJdbcInsert.executeAndReturnKey(toMap(film)).longValue();
-
         Mpa mpa = makeMpaById(film.getMpa().getId());
         film.setId(id);
         film.setMpa(mpa);
-
         if (film.getGenres() != null) fillFilmGenresTable(film);
         film.setGenres(findGenresByFilmId(id));
-
         if (film.getDirectors() != null) fillFilmDirectorsTable(film);
         film.setDirectors(findDirectorsByFilmId(id));
-
         log.debug("Сохранён фильм id: " + id);
         return film;
     }
@@ -67,18 +63,15 @@ public class DbFilmDaoImpl implements FilmDao {
     public Film update(Film film) throws InvalidFilmException, IllegalIdException {
         String sqlQueryFilms =
                 "update FILMS set " +
-                "film_name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? " +
-                "where film_id = ?"
-        ;
+                        "film_name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? " +
+                        "where film_id = ?";
         jdbcTemplate.update(sqlQueryFilms,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
                 film.getMpa().getId(),
-                film.getId()
-        );
-
+                film.getId());
         if (film.getGenres() != null) updateFilmGenresTable(film);
         Mpa mpa = makeMpaById(film.getMpa().getId());
         film.setMpa(mpa);
@@ -89,7 +82,6 @@ public class DbFilmDaoImpl implements FilmDao {
             film.setDirectors(findDirectorsByFilmId(film.getId()));
             if (film.getDirectors().isEmpty()) film.setDirectors(null);
         }
-
         log.info("Обновлён фильм id: " + film.getId());
         return film;
     }
@@ -103,7 +95,6 @@ public class DbFilmDaoImpl implements FilmDao {
     @Override
     public Optional<Film> findFilmById(long id) throws IllegalIdException {
         String sqlQuery = "select * from FILMS where film_id = " + id;
-
         Film film = jdbcTemplate.query(sqlQuery, rs -> rs.next() ? makeFilm(rs, 0) : null);
         if (film == null) {
             throw new IllegalIdException(String.format("Фильм %d не найден", id));
@@ -118,15 +109,10 @@ public class DbFilmDaoImpl implements FilmDao {
         log.debug("Удален фильм id: " + filmId);
     }
 
-    /**
-     * Если в sortBy передано "likes", отсортирует все фильмы режиссёра по количеству лайков в порядке убывания,
-     * в противном случае по дате релиза фильма от поздних к ранним (сортировка по умолчанию)
-     */
     @Override
     public List<Film> getDirectorFilms(long directorId, String sortBy) {
         List<Film> result = new ArrayList<>();
         String sqlQuery;
-
         if (sortBy.equals("likes")) {
             sqlQuery = "select FD.FILM_ID from FILM_DIRECTORS as FD " +
                     "left join LIKES L on FD.FILM_ID = L.FILM_ID " +
@@ -140,9 +126,7 @@ public class DbFilmDaoImpl implements FilmDao {
                     "WHERE DIRECTOR_ID = ? " +
                     "order by RELEASE_DATE;";
         }
-
         List<Long> filmsId = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilmId(rs), directorId);
-
         for (Long filmId : filmsId) {
             Film film = findFilmById(filmId).isPresent() ? findFilmById(filmId).get() : null;
             if (film != null) {
@@ -179,7 +163,7 @@ public class DbFilmDaoImpl implements FilmDao {
                 "from LIKES L " +
                 "join FILMS F on F.FILM_ID = L.FILM_ID " +
                 "where L.USER_ID = (select user_recommendations " +
-                "                   from GENERAL_FILMS" +
+                "from GENERAL_FILMS" +
                 "                   group by user_recommendations" +
                 "                   limit 1); ";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs, 0), id);
@@ -267,7 +251,6 @@ public class DbFilmDaoImpl implements FilmDao {
         String sqlQuery = "select director_id from FILM_DIRECTORS where film_id = ?";
         List<Long> directorsId = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirectorId(rs), filmId);
         List<Director> result = new ArrayList<>();
-
         for (long directorId : directorsId) {
             result.add(makeDirectorById(directorId));
         }
@@ -277,7 +260,6 @@ public class DbFilmDaoImpl implements FilmDao {
     private void fillFilmGenresTable(Film film) {
         String sql = "merge into FILM_GENRES (film_id, genre_id) " +
                 "values (?, ?)";
-
         for (Genre genre : film.getGenres()) {
             jdbcTemplate.update(sql,
                     film.getId(),
@@ -288,7 +270,6 @@ public class DbFilmDaoImpl implements FilmDao {
     private void fillFilmDirectorsTable(Film film) {
         String sql = "merge into FILM_DIRECTORS (film_id, director_id) " +
                 "values (?,?)";
-
         for (Director director : film.getDirectors()) {
             jdbcTemplate.update(sql,
                     film.getId(),
@@ -326,4 +307,3 @@ public class DbFilmDaoImpl implements FilmDao {
         return values;
     }
 }
-
