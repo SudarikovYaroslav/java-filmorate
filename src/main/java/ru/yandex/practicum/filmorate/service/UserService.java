@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import ru.yandex.practicum.filmorate.storage.dao.FriendshipDao;
 import ru.yandex.practicum.filmorate.storage.dao.UserDao;
 
@@ -14,18 +16,23 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class UserService {
     private final UserDao userDao;
     private final FriendshipDao friendshipDao;
+    private final FilmDao filmDao;
 
 
     @Autowired
-    public UserService(@Qualifier("dbUserDaoImpl") UserDao userDao, FriendshipDao friendshipDao) {
+    public UserService(@Qualifier("dbUserDaoImpl") UserDao userDao,
+                       FriendshipDao friendshipDao,
+                       FilmDao filmDao) {
         this.userDao = userDao;
         this.friendshipDao = friendshipDao;
+        this.filmDao = filmDao;
     }
 
     public User add(User user) throws InvalidUserException {
@@ -90,6 +97,15 @@ public class UserService {
     public void deleteUserById(Long userId) {
         checkNegativeIds(userId);
         userDao.deleteUserById(userId);
+    }
+
+    public List<Film> recommendationsFilms(Long id) {
+        checkNegativeIds(id);
+        List<Film> userFilms = new ArrayList<>(filmDao.findAllFavoriteMovies(id));
+        List<Film> recommendationsFilms = new ArrayList<>(filmDao.recommendationsFilm(id));
+        return recommendationsFilms.stream()
+                .filter(film -> !userFilms.contains(film))
+                .collect(Collectors.toList());
     }
 
     protected void validate(User user) throws InvalidUserException {
