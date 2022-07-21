@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
@@ -22,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
-@Component
+@Repository
 @Qualifier("userDbStorage")
 public class DbUserDaoImpl implements UserDao {
 
@@ -78,7 +79,6 @@ public class DbUserDaoImpl implements UserDao {
     @Override
     public Optional<User> findUserById(long id) {
         String sqlQuery = "select * from USERS where user_id = " + id;
-
         User user = jdbcTemplate.query(sqlQuery, rs -> rs.next() ? makeUser(rs, 0) : null);
         if (user == null) {
             throw new IllegalIdException(String.format("Пользователь %d не найден", id));
@@ -95,11 +95,9 @@ public class DbUserDaoImpl implements UserDao {
 
     private Map<Long, FriendshipStatus> findFriendsWithFriendshipById(long userId) {
         Map<Long, FriendshipStatus> resultMap = new HashMap<>();
-
         String sqlQueryFriendsId = "select * from USER_FRIENDS AS UF" +
                 "join FRIENDSHIP_STATUSES as FS on UF.friendship_status_id=FS.friendship_status_id " +
-                "where user_id = " + userId
-        ;
+                "where user_id = " + userId;
         List<FriendLoadingContainer> friends =
                 jdbcTemplate.query(sqlQueryFriendsId, (rs, rowNum) -> makeFriendLoadingContainer(rs));
 
@@ -107,8 +105,7 @@ public class DbUserDaoImpl implements UserDao {
             FriendshipStatus fs = FriendshipStatus.builder()
                     .id(friendContainer.getFriendshipStatusId())
                     .status(friendContainer.getFriendshipStatus())
-                    .build()
-            ;
+                    .build();
             resultMap.put(friendContainer.getFriend_id(), fs);
         }
 

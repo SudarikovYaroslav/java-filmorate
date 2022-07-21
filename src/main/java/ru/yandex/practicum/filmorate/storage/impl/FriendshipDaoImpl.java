@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.storage.dao.FriendshipDao;
 
 import java.sql.ResultSet;
@@ -11,7 +12,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
-@Component
+@Repository
 public class FriendshipDaoImpl implements FriendshipDao {
 
     public static String FRIEND_ID_COLUMN = "friend_id";

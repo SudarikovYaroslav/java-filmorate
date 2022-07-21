@@ -2,13 +2,13 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-@Component
+@Repository
 public class LikeDaoImpl implements LikeDao {
 
     public static String USER_ID_COLUMN = "user_id";
@@ -23,12 +23,10 @@ public class LikeDaoImpl implements LikeDao {
     @Override
     public void addLike(long film, long user) {
         String sqlQuery = "insert into LIKES (film_id, user_id) " +
-                          "values (?, ?)"
-        ;
+                "values (?, ?)";
         jdbcTemplate.update(sqlQuery,
                 film,
-                user
-        );
+                user);
     }
 
     @Override
