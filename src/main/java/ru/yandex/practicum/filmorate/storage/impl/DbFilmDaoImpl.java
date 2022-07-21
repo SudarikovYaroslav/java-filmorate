@@ -121,6 +121,16 @@ public class DbFilmDaoImpl implements FilmDao {
     }
 
     @Override
+    public List<Film> getCommonFilms(String userId, String friendId) {
+        Long first = Long.parseLong(userId);
+        Long second = Long.parseLong(userId);
+        List<Film> firstUserFilms = findAllFavoriteMovies(first);
+        List<Film> secondUserFilms = findAllFavoriteMovies(second);
+        firstUserFilms.retainAll(secondUserFilms);
+        return firstUserFilms;
+    }
+
+    @Override
     public void deleteFilmById(Long filmId) {
         String sqlQuery = "delete from FILMS where film_id = ?;";
         jdbcTemplate.update(sqlQuery, filmId);
