@@ -56,6 +56,12 @@ public class FilmService {
         return filmDao.findFilmById(id).orElse(null);
     }
 
+    public List<Film> searchFilms(String query, String directorAndTitle) {
+        List<Film> result = filmDao.searchFilms(query, directorAndTitle);
+        result.sort((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())));
+        return result;
+    }
+
     public void addLike(long filmId, long userId) throws IllegalIdException {
         checkFilmId(filmId);
         checkUserId(userId);
