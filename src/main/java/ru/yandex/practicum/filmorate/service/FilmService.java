@@ -85,6 +85,12 @@ public class FilmService {
         return result.subList(0, count);
     }
 
+    public List<Film> getCommonFilms(String userId, String friendId) {
+        List<Film> result = filmDao.getCommonFilms(userId, friendId);
+        result.sort((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())));
+        return result;
+    }
+
     public void deleteFilmById(Long filmId) {
         checkFilmId(filmId);
         filmDao.deleteFilmById(filmId);

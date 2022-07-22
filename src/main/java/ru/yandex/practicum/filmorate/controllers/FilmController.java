@@ -75,4 +75,9 @@ public class FilmController {
     public List<Film> searchFilms(HttpServletRequest request) {
         return filmService.searchFilms(request.getParameter("query"), request.getParameter("by"));
     }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(HttpServletRequest request) {
+        return filmService.getCommonFilms(request.getParameter("userId"), request.getParameter("friendId"));
+    }
 }
