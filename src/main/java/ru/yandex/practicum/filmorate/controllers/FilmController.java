@@ -67,8 +67,9 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopFilms(@RequestParam(defaultValue = TOP_FILMS_COUNT) Integer count) {
-        return filmService.getTopFilms(count);
+    public List<Film> getTopFilms(@RequestParam(defaultValue = TOP_FILMS_COUNT) Integer count,
+                                  @RequestParam(required = false) Long genreId, @RequestParam(required = false) Integer year) {
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     private void validate(Film film) throws InvalidFilmException {
@@ -85,7 +86,7 @@ public class FilmController {
         if (film.getName().isBlank()) {
             String message = "Пустое имя фильма при инициализации id: " + film.getId();
             log.warn(message);
-            throw  new InvalidFilmException(message);
+            throw new InvalidFilmException(message);
         }
 
         if (film.getDescription() != null && film.getDescription().length() > MAX_FILM_DESCRIPTION_LENGTH) {
@@ -120,7 +121,7 @@ public class FilmController {
     }
 
     public void checkFilmId(long id) {
-        if (id < 0 ) throw new IllegalIdException("film id:" + id + " отрицательный");
+        if (id < 0) throw new IllegalIdException("film id:" + id + " отрицательный");
     }
 
     public void checkUserId(long id) {

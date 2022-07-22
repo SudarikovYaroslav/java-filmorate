@@ -10,10 +10,11 @@ import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class FilmService {
-
     private final FilmDao filmDao;
     private final LikeDao likeDao;
 
@@ -48,11 +49,19 @@ public class FilmService {
         likeDao.deleteLike(filmId, userId);
     }
 
-    public List<Film> getTopFilms(Integer count) {
-        List<Film> result = filmDao.findAll();
-        result.sort((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())));
+    public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
+        return getStreamFilmsByGenreId(getStreamFilmsByYear(filmDao.findAll().stream(), year), genreId)
+                .sorted((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())))
+                .limit(count)
+                .collect(Collectors.toList());
+    }
 
-        if (result.size() <= count) return result;
-        return result.subList(0, count);
+    private Stream<Film> getStreamFilmsByGenreId(Stream<Film> filmStream, Long genreId) {
+        return genreId == null ? filmStream
+                : filmStream.filter(film -> film.getGenres().stream().anyMatch(g -> genreId.equals(g.getId())));
+    }
+
+    private Stream<Film> getStreamFilmsByYear(Stream<Film> filmStream, Integer year) {
+        return year == null ? filmStream : filmStream.filter(film -> year.equals(film.getReleaseDate().getYear()));
     }
 }
