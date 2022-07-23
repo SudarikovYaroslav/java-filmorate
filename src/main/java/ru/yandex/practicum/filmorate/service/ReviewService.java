@@ -26,7 +26,8 @@ public class ReviewService {
     private final LikeReviewsDao likeReviewsDao;
     private final DbFeedDaoImpl dbFeedDaoImpl;
 
-    public ReviewService(ReviewDao reviewDao, UserDao userDao, FilmDao filmDao, LikeReviewsDao likeReviewsDao, DbFeedDaoImpl dbFeedDaoImpl) {
+    public ReviewService(ReviewDao reviewDao, UserDao userDao, FilmDao filmDao,
+                         LikeReviewsDao likeReviewsDao, DbFeedDaoImpl dbFeedDaoImpl) {
         this.reviewDao = reviewDao;
         this.userDao = userDao;
         this.filmDao = filmDao;

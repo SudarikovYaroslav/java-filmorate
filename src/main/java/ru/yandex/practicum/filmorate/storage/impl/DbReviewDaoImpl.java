@@ -26,7 +26,11 @@ public class DbReviewDaoImpl implements ReviewDao {
     }
 
     private Review makeReview(ResultSet rs, int rowNum) throws SQLException {
-        return new Review(rs.getLong("review_id"), rs.getString("content"), rs.getBoolean("positive_status"), rs.getLong("user_id"), rs.getLong("film_id"), 0);
+        return new Review(rs.getLong("review_id"),
+                rs.getString("content"),
+                rs.getBoolean("positive_status"),
+                rs.getLong("user_id"),
+                rs.getLong("film_id"), 0);
     }
 
     @Override
