@@ -6,13 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.sorts.SortingType;
+import ru.yandex.practicum.filmorate.storage.dao.FeedDao;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
 import ru.yandex.practicum.filmorate.storage.impl.DbFeedDaoImpl;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,19 +21,20 @@ public class FilmService {
 
     private final FilmDao filmDao;
     private final LikeDao likeDao;
-    private final DbFeedDaoImpl dbFeedDaoImpl;
+    private final FeedDao feedDao;
     private final DirectorService directorService;
     private final ValidationService validationService;
 
     @Autowired
     public FilmService(@Qualifier("dbFilmDaoImpl") FilmDao filmDao,
-                       LikeDao likeDao, DirectorService directorService,
-                       DbFeedDaoImpl dbFeedDaoImpl,
+                       LikeDao likeDao,
+                       DirectorService directorService,
+                       DbFeedDaoImpl feedDao,
                        ValidationService validationService) {
         this.filmDao = filmDao;
         this.likeDao = likeDao;
         this.directorService = directorService;
-        this.dbFeedDaoImpl = dbFeedDaoImpl;
+        this.feedDao = feedDao;
         this.validationService = validationService;
     }
 
@@ -66,7 +66,7 @@ public class FilmService {
     public void addLike(long filmId, long userId) {
         validationService.checkFilmId(filmId);
         validationService.checkUserId(userId);
-        dbFeedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                 userId, "LIKE", "ADD", filmId));
         likeDao.addLike(filmId, userId);
     }
@@ -74,7 +74,7 @@ public class FilmService {
     public void deleteLike(long filmId, long userId) {
         validationService.checkFilmId(filmId);
         validationService.checkUserId(userId);
-        dbFeedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                 userId, "LIKE", "REMOVE", filmId));
         likeDao.deleteLike(filmId, userId);
     }

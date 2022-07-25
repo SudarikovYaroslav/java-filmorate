@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.dao.FeedDao;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import ru.yandex.practicum.filmorate.storage.dao.FriendshipDao;
 import ru.yandex.practicum.filmorate.storage.dao.UserDao;
@@ -24,19 +25,19 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserDao userDao;
     private final FilmDao filmDao;
-    private final DbFeedDaoImpl feedDaoImpl;
+    private final FeedDao feedDao;
     private final FriendshipDao friendshipDao;
     private final ValidationService validationService;
 
     @Autowired
     public UserService(@Qualifier("dbUserDaoImpl") UserDao userDao,
                        FriendshipDao friendshipDao,
-                       FilmDao filmDao, DbFeedDaoImpl feedDaoImpl,
+                       FilmDao filmDao, DbFeedDaoImpl feedDao,
                        ValidationService validationService) {
         this.userDao = userDao;
         this.friendshipDao = friendshipDao;
         this.filmDao = filmDao;
-        this.feedDaoImpl = feedDaoImpl;
+        this.feedDao = feedDao;
         this.validationService = validationService;
     }
 
@@ -62,14 +63,14 @@ public class UserService {
 
     public void addFriend(long userId, long friendId) {
         validationService.checkNegativeIds(userId, friendId);
-        feedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                 userId,"FRIEND","ADD", friendId));
         friendshipDao.addFriend(userId, friendId);
     }
 
     public void deleteFriend(long userId, long friendId) {
         validationService.checkNegativeIds(userId, friendId);
-        feedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                 userId,"FRIEND","REMOVE", friendId));
         friendshipDao.deleteFriend(userId, friendId);
     }
@@ -115,6 +116,6 @@ public class UserService {
     }
 
     public List<Feed> getUserFeedList(Long userId){
-        return feedDaoImpl.getUserFeedList(userId);
+        return feedDao.getUserFeedList(userId);
     }
 }

@@ -91,7 +91,9 @@ public class ValidationService {
         if (director.getId() <= 0
                 || director.getName() == null
                 || director.getName().isBlank()
-        ) throw new InvalidDirectorException("Недопустимы значения поле director");
+        ) {
+            throw new InvalidDirectorException("Недопустимы значения поле director");
+        }
     }
 
     public void validateNotNull(Film film) {

@@ -4,10 +4,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
-import ru.yandex.practicum.filmorate.storage.dao.LikeReviewsDao;
-import ru.yandex.practicum.filmorate.storage.dao.ReviewDao;
-import ru.yandex.practicum.filmorate.storage.dao.UserDao;
+import ru.yandex.practicum.filmorate.storage.dao.*;
 import ru.yandex.practicum.filmorate.storage.impl.DbFeedDaoImpl;
 
 import java.time.Instant;
@@ -20,19 +17,19 @@ import java.util.stream.Collectors;
 @Service
 public class ReviewService {
 
-    private final ReviewDao reviewDao;
     private final UserDao userDao;
     private final FilmDao filmDao;
+    private final FeedDao feedDao;
+    private final ReviewDao reviewDao;
     private final LikeReviewsDao likeReviewsDao;
-    private final DbFeedDaoImpl dbFeedDaoImpl;
 
     public ReviewService(ReviewDao reviewDao, UserDao userDao, FilmDao filmDao,
-                         LikeReviewsDao likeReviewsDao, DbFeedDaoImpl dbFeedDaoImpl) {
+                         LikeReviewsDao likeReviewsDao, DbFeedDaoImpl feedDao) {
         this.reviewDao = reviewDao;
         this.userDao = userDao;
         this.filmDao = filmDao;
         this.likeReviewsDao = likeReviewsDao;
-        this.dbFeedDaoImpl = dbFeedDaoImpl;
+        this.feedDao = feedDao;
     }
 
     public Collection<Review> findAllByFilmId(int filmId, int count) {
@@ -67,7 +64,7 @@ public class ReviewService {
                 && (filmDao.findFilmById(review.getFilmId()).isPresent())) {
             Review newReview = reviewDao.save(review);
             newReview.setUseful(0);
-            dbFeedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+            feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                     review.getUserId(), "REVIEW", "ADD", review.getReviewId()));
             return newReview;
         } else {
@@ -81,7 +78,7 @@ public class ReviewService {
         if (reviewDao.findAll().contains(review)) {
             Review newReview = reviewDao.update(review);
             newReview.setUseful(rateReviews(review.getReviewId()));
-            dbFeedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+            feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                     newReview.getUserId(), "REVIEW", "UPDATE", newReview.getReviewId()));
             return newReview;
         } else {
@@ -101,7 +98,7 @@ public class ReviewService {
 
     public boolean delete(long id) {
         Optional<Review> review = reviewDao.findReviewById(id);
-        dbFeedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                 review.get().getUserId(), "REVIEW", "REMOVE", review.get().getReviewId()));
         return reviewDao.delete(id);
     }
