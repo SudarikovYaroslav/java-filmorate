@@ -19,6 +19,12 @@ import java.util.Optional;
 @Repository
 public class DbReviewDaoImpl implements ReviewDao {
 
+    public static final String REVIEW_COLUMN = "review_id";
+    public static final String CONTENT_COLUMN = "content";
+    public static final String POSITIVE_STATUS_COLUMN = "positive_status";
+    public static final String USER_ID_COLUMN = "user_id";
+    public static final String FILM_ID_COLUMN = "film_id";
+
     private final JdbcTemplate jdbcTemplate;
 
     public DbReviewDaoImpl(JdbcTemplate jdbcTemplate) {
@@ -26,11 +32,11 @@ public class DbReviewDaoImpl implements ReviewDao {
     }
 
     private Review makeReview(ResultSet rs, int rowNum) throws SQLException {
-        return new Review(rs.getLong("review_id"),
-                rs.getString("content"),
-                rs.getBoolean("positive_status"),
-                rs.getLong("user_id"),
-                rs.getLong("film_id"), 0);
+        return new Review(rs.getLong(REVIEW_COLUMN),
+                rs.getString(CONTENT_COLUMN),
+                rs.getBoolean(POSITIVE_STATUS_COLUMN),
+                rs.getLong(USER_ID_COLUMN),
+                rs.getLong(FILM_ID_COLUMN), 0);
     }
 
     @Override

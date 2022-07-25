@@ -7,11 +7,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
-import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.sorts.SortingType;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 
 import java.sql.ResultSet;
@@ -60,7 +60,7 @@ public class DbFilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public Film update(Film film) throws InvalidFilmException, IllegalIdException {
+    public Film update(Film film) {
         String sqlQueryFilms =
                 "update FILMS set " +
                         "film_name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? " +
@@ -93,7 +93,7 @@ public class DbFilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public Optional<Film> findFilmById(long id) throws IllegalIdException {
+    public Optional<Film> findFilmById(long id) {
         String sqlQuery = "select * from FILMS where film_id = " + id;
         Film film = jdbcTemplate.query(sqlQuery, rs -> rs.next() ? makeFilm(rs, 0) : null);
         if (film == null) {
@@ -138,10 +138,10 @@ public class DbFilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Film> getDirectorFilms(long directorId, String sortBy) {
+    public List<Film> getDirectorFilms(long directorId, SortingType sortBy) {
         List<Film> result = new ArrayList<>();
         String sqlQuery;
-        if (sortBy.equals("likes")) {
+        if (sortBy.equals(SortingType.LIKES)) {
             sqlQuery = "select FD.FILM_ID from FILM_DIRECTORS as FD " +
                     "left join LIKES L on FD.FILM_ID = L.FILM_ID " +
                     "where DIRECTOR_ID = ? " +

@@ -15,6 +15,13 @@ import java.util.List;
 @Repository
 public class DbFeedDaoImpl implements FeedDao {
 
+    public static final String EVENT_ID_COLUMN = "event_id";
+    public static final String FEED_TIME_COLUMN = "feed_time";
+    public static final String USER_ID_COLUMN = "user_id";
+    public static final String EVENT_TYPE_COLUMN = "event_type";
+    public static final String OPERATION_COLUMN = "operation";
+    public static final String ENTITY_ID_COLUMN = "entity_id";
+
     private final JdbcTemplate jdbcTemplate;
 
     public DbFeedDaoImpl(JdbcTemplate jdbcTemplate) {
@@ -44,11 +51,11 @@ public class DbFeedDaoImpl implements FeedDao {
     }
 
     private Feed makeFeed(ResultSet rs, int rowNum) throws SQLException {
-        return new Feed(rs.getLong("feed_time"),
-                rs.getLong("user_id"),
-                rs.getString("event_type"),
-                rs.getString("operation"),
-                rs.getLong("event_id"),
-                rs.getLong("entity_id"));
+        return new Feed(rs.getLong(EVENT_ID_COLUMN),
+                rs.getLong(FEED_TIME_COLUMN),
+                rs.getLong(USER_ID_COLUMN),
+                rs.getString(EVENT_TYPE_COLUMN),
+                rs.getString(OPERATION_COLUMN),
+                rs.getLong(ENTITY_ID_COLUMN));
     }
 }

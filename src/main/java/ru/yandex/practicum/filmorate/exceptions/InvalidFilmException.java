@@ -1,5 +1,5 @@
 package ru.yandex.practicum.filmorate.exceptions;
 
-public class InvalidFilmException extends Exception {
+public class InvalidFilmException extends RuntimeException {
     public InvalidFilmException(String message) {super(message);}
 }
