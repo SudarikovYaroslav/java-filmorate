@@ -2,10 +2,9 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
-import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.sorts.SortingType;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
     public static final String TOP_FILMS_COUNT = "10";
-    public static final String DEFAULT_SORT = "year";
 
     private final FilmService filmService;
 
@@ -24,12 +22,12 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film add(@RequestBody Film film) throws InvalidFilmException {
+    public Film add(@RequestBody Film film) {
         return filmService.add(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) throws InvalidFilmException {
+    public Film update(@RequestBody Film film) {
         return filmService.update(film);
     }
 
@@ -45,19 +43,17 @@ public class FilmController {
 
     @GetMapping("/director/{directorId}")
     public List<Film> getDirectorFilms(@PathVariable long directorId,
-                                       @RequestParam(defaultValue = DEFAULT_SORT) String sortBy) {
+                                       @RequestParam("sortBy") SortingType sortBy) {
         return filmService.getDirectorFilms(directorId, sortBy);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable long id, @PathVariable long userId)
-            throws IllegalIdException {
+    public void addLike(@PathVariable long id, @PathVariable long userId) {
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id, @PathVariable long userId)
-            throws IllegalIdException {
+    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
         filmService.deleteLike(id, userId);
     }
 

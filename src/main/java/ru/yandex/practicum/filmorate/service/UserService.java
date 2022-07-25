@@ -14,11 +14,8 @@ import ru.yandex.practicum.filmorate.storage.dao.FriendshipDao;
 import ru.yandex.practicum.filmorate.storage.dao.UserDao;
 import ru.yandex.practicum.filmorate.storage.impl.DbFeedDaoImpl;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,12 +40,12 @@ public class UserService {
         this.feedDaoImpl = feedDaoImpl;
     }
 
-    public User add(User user) throws InvalidUserException {
+    public User add(User user) {
         validate(user);
         return userDao.save(user);
     }
 
-    public User update(User user) throws InvalidUserException {
+    public User update(User user) {
         validate(user);
         return userDao.update(user);
     }
@@ -65,15 +62,15 @@ public class UserService {
 
     public void addFriend(long userId, long friendId) {
         checkNegativeIds(userId, friendId);
-        feedDaoImpl.saveFeed(new Feed(Instant.now().toEpochMilli(),
-                userId,"FRIEND","ADD",1,friendId));
+        feedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+                userId,"FRIEND","ADD", friendId));
         friendshipDao.addFriend(userId, friendId);
     }
 
     public void deleteFriend(long userId, long friendId) {
         checkNegativeIds(userId, friendId);
-        feedDaoImpl.saveFeed(new Feed(Instant.now().toEpochMilli(),
-                userId,"FRIEND","REMOVE",1,friendId));
+        feedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+                userId,"FRIEND","REMOVE", friendId));
         friendshipDao.deleteFriend(userId, friendId);
     }
 
@@ -127,7 +124,7 @@ public class UserService {
         return feedDaoImpl.getUserFeedList(userId);
     }
 
-    protected void validate(User user) throws InvalidUserException {
+    protected void validate(User user) {
         validateNotNull(user);
         if(user.getId() < 0) {
             throw new IllegalIdException("id пользователя не может быть отрицательным");

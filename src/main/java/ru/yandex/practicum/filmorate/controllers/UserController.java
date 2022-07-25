@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -22,12 +21,12 @@ public class UserController {
     }
 
     @PostMapping
-    public User add(@RequestBody User user) throws InvalidUserException {
+    public User add(@RequestBody User user) {
         return userService.add(user);
     }
 
     @PutMapping
-    public User update(@RequestBody User user) throws InvalidUserException {
+    public User update(@RequestBody User user) {
         return userService.update(user);
     }
 

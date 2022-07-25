@@ -42,9 +42,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleStorageException(final StorageException e) {
-        return new ErrorResponse( "NOT_FOUND",
-                e.getMessage()
-        );
+    public ErrorResponse handleStorageException(StorageException e) {
+        return new ErrorResponse("NOT_FOUND", e.getMessage());
     }
 }

@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.sorts.SortingType;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
 import ru.yandex.practicum.filmorate.storage.impl.DbFeedDaoImpl;
@@ -39,12 +40,12 @@ public class FilmService {
         this.dbFeedDaoImpl = dbFeedDaoImpl;
     }
 
-    public Film add(Film film) throws InvalidFilmException {
+    public Film add(Film film) {
         validate(film);
         return filmDao.save(film);
     }
 
-    public Film update(Film film) throws InvalidFilmException, IllegalIdException {
+    public Film update(Film film) {
         validate(film);
         return filmDao.update(film);
     }
@@ -53,7 +54,7 @@ public class FilmService {
         return filmDao.findAll();
     }
 
-    public Film getFilmById(long id) throws IllegalIdException {
+    public Film getFilmById(long id) {
         checkFilmId(id);
         return filmDao.findFilmById(id).orElse(null);
     }
@@ -64,19 +65,19 @@ public class FilmService {
         return result;
     }
 
-    public void addLike(long filmId, long userId) throws IllegalIdException {
+    public void addLike(long filmId, long userId) {
         checkFilmId(filmId);
         checkUserId(userId);
-        dbFeedDaoImpl.saveFeed(new Feed(Instant.now().toEpochMilli(),
-                userId, "LIKE", "ADD", 1, filmId));
+        dbFeedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+                userId, "LIKE", "ADD", filmId));
         likeDao.addLike(filmId, userId);
     }
 
-    public void deleteLike(long filmId, long userId) throws IllegalIdException {
+    public void deleteLike(long filmId, long userId) {
         checkFilmId(filmId);
         checkUserId(userId);
-        dbFeedDaoImpl.saveFeed(new Feed(Instant.now().toEpochMilli(),
-                userId, "LIKE", "REMOVE", 1, filmId));
+        dbFeedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+                userId, "LIKE", "REMOVE", filmId));
         likeDao.deleteLike(filmId, userId);
     }
 
@@ -107,13 +108,13 @@ public class FilmService {
         filmDao.deleteFilmById(filmId);
     }
 
-    public List<Film> getDirectorFilms(long directorId, String sortBy) {
+    public List<Film> getDirectorFilms(long directorId, SortingType sortBy) {
         checkDirectorId(directorId);
         directorService.checkIfDirectorExists(directorId);
         return filmDao.getDirectorFilms(directorId, sortBy);
     }
 
-    private void validate(Film film) throws InvalidFilmException {
+    private void validate(Film film) {
         validateNotNull(film);
         checkFilmId(film.getId());
         if (film.getName() == null) {

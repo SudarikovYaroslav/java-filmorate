@@ -10,8 +10,8 @@ import ru.yandex.practicum.filmorate.service.ReviewService;
 import javax.validation.Valid;
 import java.util.Collection;
 
-@RestController
 @Slf4j
+@RestController
 @RequestMapping("/reviews")
 public class ReviewController {
     private final ReviewService reviewService;
@@ -22,12 +22,12 @@ public class ReviewController {
     }
 
     @PostMapping
-    public Review add(@Valid @RequestBody Review review) throws StorageException {
+    public Review add(@Valid @RequestBody Review review) {
         return reviewService.save(review);
     }
 
     @PutMapping
-    public Review update(@Valid @RequestBody Review review) throws StorageException {
+    public Review update(@Valid @RequestBody Review review) {
         return reviewService.update(review);
     }
 
@@ -38,7 +38,7 @@ public class ReviewController {
     }
 
     @GetMapping("/{id}")
-    public Review getReviewById(@PathVariable long id) throws StorageException {
+    public Review getReviewById(@PathVariable long id) {
         return reviewService.findReviewById(id);
     }
 

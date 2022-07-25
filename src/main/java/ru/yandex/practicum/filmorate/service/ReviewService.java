@@ -60,15 +60,15 @@ public class ReviewService {
         return (p1.getUseful() - p0.getUseful());
     }
 
-    public Review save(Review review) throws StorageException {
+    public Review save(Review review) {
         if (review.getUserId() == null || review.getFilmId() == null) {
             throw new IllegalStateException("Не заполнены поля filmId или userId");
         } else if ((userDao.findUserById(review.getUserId()).isPresent())
                 && (filmDao.findFilmById(review.getFilmId()).isPresent())) {
             Review newReview = reviewDao.save(review);
             newReview.setUseful(0);
-            dbFeedDaoImpl.saveFeed(new Feed(Instant.now().toEpochMilli(),
-                    review.getUserId(), "REVIEW", "ADD", 1, review.getReviewId()));
+            dbFeedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+                    review.getUserId(), "REVIEW", "ADD", review.getReviewId()));
             return newReview;
         } else {
             throw new StorageException("Не удалось сохранить отзыв. Проверьте корректность" +
@@ -77,19 +77,19 @@ public class ReviewService {
         }
     }
 
-    public Review update(Review review) throws StorageException {
+    public Review update(Review review) {
         if (reviewDao.findAll().contains(review)) {
             Review newReview = reviewDao.update(review);
             newReview.setUseful(rateReviews(review.getReviewId()));
-            dbFeedDaoImpl.saveFeed(new Feed(Instant.now().toEpochMilli(),
-                    newReview.getUserId(), "REVIEW", "UPDATE", 1, newReview.getReviewId()));
+            dbFeedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+                    newReview.getUserId(), "REVIEW", "UPDATE", newReview.getReviewId()));
             return newReview;
         } else {
             throw new StorageException("Данного отзыва c Id = " + review.getReviewId() + " нет в БД");
         }
     }
 
-    public Review findReviewById(long id) throws StorageException {
+    public Review findReviewById(long id) {
         if (reviewDao.findReviewById(id).isPresent()) {
             Review review = reviewDao.findReviewById(id).get();
             review.setUseful(rateReviews(id));
@@ -101,12 +101,12 @@ public class ReviewService {
 
     public boolean delete(long id) {
         Optional<Review> review = reviewDao.findReviewById(id);
-        dbFeedDaoImpl.saveFeed(new Feed(Instant.now().toEpochMilli(),
-                review.get().getUserId(), "REVIEW", "REMOVE", 1, review.get().getReviewId()));
+        dbFeedDaoImpl.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+                review.get().getUserId(), "REVIEW", "REMOVE", review.get().getReviewId()));
         return reviewDao.delete(id);
     }
 
-    public void addLike(long reviewId, long userId) throws StorageException {
+    public void addLike(long reviewId, long userId) {
         if (reviewDao.findReviewById(reviewId).isPresent() && userDao.findUserById(userId).isPresent()) {
             likeReviewsDao.addLike(reviewId, userId);
         } else {
@@ -116,7 +116,7 @@ public class ReviewService {
         }
     }
 
-    public void addDislike(long reviewId, long userId) throws StorageException {
+    public void addDislike(long reviewId, long userId) {
         if (reviewDao.findReviewById(reviewId).isPresent() && userDao.findUserById(userId).isPresent()) {
             likeReviewsDao.addDislike(reviewId, userId);
         } else {

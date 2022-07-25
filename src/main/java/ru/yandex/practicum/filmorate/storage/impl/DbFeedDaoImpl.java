@@ -44,11 +44,11 @@ public class DbFeedDaoImpl implements FeedDao {
     }
 
     private Feed makeFeed(ResultSet rs, int rowNum) throws SQLException {
-        return new Feed(rs.getLong("feed_time"),
+        return new Feed(rs.getLong("event_id"),
+                rs.getLong("feed_time"),
                 rs.getLong("user_id"),
                 rs.getString("event_type"),
                 rs.getString("operation"),
-                rs.getLong("event_id"),
                 rs.getLong("entity_id"));
     }
 }

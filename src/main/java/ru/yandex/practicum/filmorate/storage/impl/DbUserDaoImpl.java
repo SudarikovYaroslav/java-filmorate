@@ -55,7 +55,7 @@ public class DbUserDaoImpl implements UserDao {
     }
 
     @Override
-    public User update(User user) throws InvalidUserException {
+    public User update(User user) {
         String sqlQuery = "update USERS set " +
                           "email = ?, login = ?, username = ?, birthday = ? " +
                           "where user_id = ?";
