@@ -56,40 +56,39 @@ public class ReviewService {
     public Review save(Review review) {
         if (review.getUserId() == null || review.getFilmId() == null) {
             throw new IllegalStateException("Не заполнены поля filmId или userId");
-        } else if ((userDao.findUserById(review.getUserId()).isPresent())
+        }
+
+        if ((userDao.findUserById(review.getUserId()).isPresent())
                 && (filmDao.findFilmById(review.getFilmId()).isPresent())) {
             Review newReview = reviewDao.save(review);
             newReview.setUseful(0);
             feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                     review.getUserId(), "REVIEW", "ADD", review.getReviewId()));
             return newReview;
-        } else {
-            throw new StorageException("Не удалось сохранить отзыв. Проверьте корректность" +
-                    " заданных параметров FilmId = "
-                    + review.getFilmId() + ", UserId = " + review.getUserId());
         }
+
+        throw new StorageException("Не удалось сохранить отзыв. Проверьте корректность" +
+                " заданных параметров FilmId = " + review.getFilmId() + ", UserId = " + review.getUserId());
     }
 
     public Review update(Review review) {
-        if (reviewDao.findAll().contains(review)) {
-            Review newReview = reviewDao.update(review);
-            newReview.setUseful(rateReviews(review.getReviewId()));
-            feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
-                    newReview.getUserId(), "REVIEW", "UPDATE", newReview.getReviewId()));
-            return newReview;
-        } else {
+        if (!reviewDao.findAll().contains(review)) {
             throw new StorageException("Данного отзыва c Id = " + review.getReviewId() + " нет в БД");
         }
+        Review newReview = reviewDao.update(review);
+        newReview.setUseful(rateReviews(review.getReviewId()));
+        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+                newReview.getUserId(), "REVIEW", "UPDATE", newReview.getReviewId()));
+        return newReview;
     }
 
     public Review findReviewById(long id) {
-        if (reviewDao.findReviewById(id).isPresent()) {
-            Review review = reviewDao.findReviewById(id).get();
-            review.setUseful(rateReviews(id));
-            return review;
-        } else {
-            throw new StorageException("Данного отзываc Id = " + id + " нет в БД");
+        if (reviewDao.findReviewById(id).isEmpty()) {
+            throw new StorageException("Данного отзыва с Id = " + id + " нет в БД");
         }
+        Review review = reviewDao.findReviewById(id).get();
+        review.setUseful(rateReviews(id));
+        return review;
     }
 
     public boolean delete(long id) {
@@ -100,23 +99,21 @@ public class ReviewService {
     }
 
     public void addLike(long reviewId, long userId) {
-        if (reviewDao.findReviewById(reviewId).isPresent() && userDao.findUserById(userId).isPresent()) {
-            likeReviewsDao.addLike(reviewId, userId);
-        } else {
+        if (reviewDao.findReviewById(reviewId).isEmpty() && userDao.findUserById(userId).isEmpty()) {
             throw new StorageException("Не удалось поставить лайк отзыву. Проверьте корректность" +
                     " заданных параметров reviewId = "
                     + reviewId + ", UserId = " + userId);
         }
+        likeReviewsDao.addLike(reviewId, userId);
     }
 
     public void addDislike(long reviewId, long userId) {
-        if (reviewDao.findReviewById(reviewId).isPresent() && userDao.findUserById(userId).isPresent()) {
-            likeReviewsDao.addDislike(reviewId, userId);
-        } else {
+        if (reviewDao.findReviewById(reviewId).isEmpty() && userDao.findUserById(userId).isEmpty()) {
             throw new StorageException("Не удалось поставить дизлайк отзыву. Проверьте корректность" +
                     " заданных параметров reviewId = "
                     + reviewId + ", UserId = " + userId);
         }
+        likeReviewsDao.addDislike(reviewId, userId);
     }
 
     public void deleteLike(long reviewId, long userId) {
@@ -128,8 +125,8 @@ public class ReviewService {
     }
 
     public Integer rateReviews(long reviewId) {
-        if (likeReviewsDao.likesNumber(reviewId) != null) {
-            return likeReviewsDao.likesNumber(reviewId);
+        if (likeReviewsDao.getLikesCount(reviewId) != null) {
+            return likeReviewsDao.getLikesCount(reviewId);
         }
         return 0;
     }

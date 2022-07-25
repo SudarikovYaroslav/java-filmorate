@@ -16,5 +16,5 @@ public interface ReviewDao {
 
     Boolean delete(long id);
 
-    Collection<Review> findReviewsByFilmId (long filmId);
+    Collection<Review> findReviewsByFilmId(long filmId);
 }

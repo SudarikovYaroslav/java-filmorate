@@ -9,5 +9,5 @@ public interface LikeReviewsDao {
 
     void deleteDislike(long reviewId, long userId);
 
-    Integer likesNumber(long reviewId);
+    Integer getLikesCount(long reviewId);
 }

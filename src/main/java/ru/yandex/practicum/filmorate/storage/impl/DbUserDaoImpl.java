@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
-import ru.yandex.practicum.filmorate.exceptions.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.dao.UserDao;
@@ -86,7 +85,7 @@ public class DbUserDaoImpl implements UserDao {
     }
 
     @Override
-    public void deleteUserById(Long userId) {
+    public void deleteUserById(long userId) {
         String sqlQuery = "delete from USERS where user_id = ?;";
         jdbcTemplate.update(sqlQuery, userId);
         log.debug("Удален пользователь id: " + userId);

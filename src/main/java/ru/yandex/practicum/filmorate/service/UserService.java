@@ -32,7 +32,8 @@ public class UserService {
     @Autowired
     public UserService(@Qualifier("dbUserDaoImpl") UserDao userDao,
                        FriendshipDao friendshipDao,
-                       FilmDao filmDao, DbFeedDaoImpl feedDao,
+                       FilmDao filmDao,
+                       DbFeedDaoImpl feedDao,
                        ValidationService validationService) {
         this.userDao = userDao;
         this.friendshipDao = friendshipDao;
@@ -63,15 +64,16 @@ public class UserService {
 
     public void addFriend(long userId, long friendId) {
         validationService.validateIds(userId, friendId);
-        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
-                userId,"FRIEND","ADD", friendId));
+        Feed feed = new Feed(1, Instant.now().toEpochMilli(), userId,"FRIEND","ADD", friendId);
+        feedDao.saveFeed(feed);
         friendshipDao.addFriend(userId, friendId);
     }
 
     public void deleteFriend(long userId, long friendId) {
         validationService.validateIds(userId, friendId);
-        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
-                userId,"FRIEND","REMOVE", friendId));
+        Feed feed = new Feed(1, Instant.now().toEpochMilli(), userId,"FRIEND","REMOVE",
+                friendId);
+        feedDao.saveFeed(feed);
         friendshipDao.deleteFriend(userId, friendId);
     }
 
