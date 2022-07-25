@@ -29,7 +29,7 @@ public class FilmService {
     public FilmService(@Qualifier("dbFilmDaoImpl") FilmDao filmDao,
                        LikeDao likeDao,
                        DirectorService directorService,
-                       DbFeedDaoImpl feedDao,
+                       FeedDao feedDao,
                        ValidationService validationService) {
         this.filmDao = filmDao;
         this.likeDao = likeDao;

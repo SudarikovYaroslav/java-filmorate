@@ -33,7 +33,7 @@ public class UserService {
     public UserService(@Qualifier("dbUserDaoImpl") UserDao userDao,
                        FriendshipDao friendshipDao,
                        FilmDao filmDao,
-                       DbFeedDaoImpl feedDao,
+                       FeedDao feedDao,
                        ValidationService validationService) {
         this.userDao = userDao;
         this.friendshipDao = friendshipDao;
