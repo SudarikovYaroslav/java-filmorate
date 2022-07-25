@@ -56,27 +56,27 @@ public class UserService {
     }
 
     public User getUserById(long id) {
-        validationService.checkNegativeIds(id);
+        validationService.validateIds(id);
         return userDao.findUserById(id)
                 .orElseThrow(() -> new IllegalIdException(String.format("Пользователь %d не найден", id)));
     }
 
     public void addFriend(long userId, long friendId) {
-        validationService.checkNegativeIds(userId, friendId);
+        validationService.validateIds(userId, friendId);
         feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                 userId,"FRIEND","ADD", friendId));
         friendshipDao.addFriend(userId, friendId);
     }
 
     public void deleteFriend(long userId, long friendId) {
-        validationService.checkNegativeIds(userId, friendId);
+        validationService.validateIds(userId, friendId);
         feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                 userId,"FRIEND","REMOVE", friendId));
         friendshipDao.deleteFriend(userId, friendId);
     }
 
     public List<User> getUserFriends(long id) {
-        validationService.checkNegativeIds(id);
+        validationService.validateIds(id);
         List<User> result = new ArrayList<>();
         Optional<User> optionalUser = userDao.findUserById(id);
         if (optionalUser.isPresent()) {
@@ -89,7 +89,7 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(long user1Id, long user2Id) {
-        validationService.checkNegativeIds(user1Id, user2Id);
+        validationService.validateIds(user1Id, user2Id);
         List<User> commonFriends = new ArrayList<>();
         List<Long> user1FriendsId = friendshipDao.getFriends(user1Id);
         List<Long> user2FriendsId = friendshipDao.getFriends(user2Id);
@@ -102,12 +102,12 @@ public class UserService {
     }
 
     public void deleteUserById(Long userId) {
-        validationService.checkNegativeIds(userId);
+        validationService.validateIds(userId);
         userDao.deleteUserById(userId);
     }
 
     public List<Film> recommendationsFilms(Long id) {
-        validationService.checkNegativeIds(id);
+        validationService.validateIds(id);
         List<Film> userFilms = new ArrayList<>(filmDao.findAllFavoriteMovies(id));
         List<Film> recommendationsFilms = new ArrayList<>(filmDao.recommendationsFilm(id));
         return recommendationsFilms.stream()

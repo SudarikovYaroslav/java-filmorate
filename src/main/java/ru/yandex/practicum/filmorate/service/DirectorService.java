@@ -26,7 +26,7 @@ public class DirectorService {
     }
 
     public Director getDirectorById(long directorId) {
-        validationService.checkId(directorId);
+        validationService.validateId(directorId);
         Optional<Director> director = directorDao.findDirectorById(directorId);
         if (director.isEmpty()) throw new StorageException(String.format("Режиссёр с id: %d не найден", directorId));
         return director.get();
@@ -44,7 +44,7 @@ public class DirectorService {
     }
 
     public void delete(long directorId) {
-        validationService.checkId(directorId);
+        validationService.validateId(directorId);
         checkIfDirectorExists(directorId);
         directorDao.delete(directorId);
     }

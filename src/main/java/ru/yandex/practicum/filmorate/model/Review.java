@@ -8,7 +8,7 @@ import java.util.Objects;
 @Setter
 @Builder
 @AllArgsConstructor
-public class Review {
+public class Review  implements Comparable<Review>{
     private long reviewId;
     private String content;
     private Boolean isPositive;
@@ -29,5 +29,10 @@ public class Review {
     @Override
     public int hashCode() {
         return Objects.hash(reviewId);
+    }
+
+    @Override
+    public int compareTo(Review o) {
+        return o.getUseful() - useful;
     }
 }

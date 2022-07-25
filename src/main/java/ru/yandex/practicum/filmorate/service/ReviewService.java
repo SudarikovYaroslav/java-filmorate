@@ -49,12 +49,8 @@ public class ReviewService {
             reviewsWithUseful.add(review);
         }
         return reviewsWithUseful.stream()
-                .sorted(this::compare)
+                .sorted()
                 .collect(Collectors.toList());
-    }
-
-    private int compare(Review p0, Review p1) {
-        return (p1.getUseful() - p0.getUseful());
     }
 
     public Review save(Review review) {

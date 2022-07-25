@@ -53,7 +53,7 @@ public class FilmService {
     }
 
     public Film getFilmById(long id) {
-        validationService.checkFilmId(id);
+        validationService.validateFilmId(id);
         return filmDao.findFilmById(id).orElse(null);
     }
 
@@ -64,16 +64,16 @@ public class FilmService {
     }
 
     public void addLike(long filmId, long userId) {
-        validationService.checkFilmId(filmId);
-        validationService.checkUserId(userId);
+        validationService.validateFilmId(filmId);
+        validationService.validateUserId(userId);
         feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                 userId, "LIKE", "ADD", filmId));
         likeDao.addLike(filmId, userId);
     }
 
     public void deleteLike(long filmId, long userId) {
-        validationService.checkFilmId(filmId);
-        validationService.checkUserId(userId);
+        validationService.validateFilmId(filmId);
+        validationService.validateUserId(userId);
         feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
                 userId, "LIKE", "REMOVE", filmId));
         likeDao.deleteLike(filmId, userId);
@@ -102,12 +102,12 @@ public class FilmService {
     }
 
     public void deleteFilmById(Long filmId) {
-        validationService.checkFilmId(filmId);
+        validationService.validateFilmId(filmId);
         filmDao.deleteFilmById(filmId);
     }
 
     public List<Film> getDirectorFilms(long directorId, SortingType sortBy) {
-        validationService.checkDirectorId(directorId);
+        validationService.validateDirectorId(directorId);
         directorService.checkIfDirectorExists(directorId);
         return filmDao.getDirectorFilms(directorId, sortBy);
     }

@@ -24,7 +24,7 @@ public class MpaService {
     }
 
     public Mpa findMpaRatingById(long id) {
-        validationService.checkId(id);
+        validationService.validateId(id);
         return mpaRatingDao.findMpaRatingById(id);
     }
 }

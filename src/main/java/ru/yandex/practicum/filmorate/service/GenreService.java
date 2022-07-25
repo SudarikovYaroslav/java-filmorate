@@ -23,7 +23,7 @@ public class GenreService {
     }
 
     public Genre findGenreById(long id) {
-        validationService.checkId(id);
+        validationService.validateId(id);
         return genreDao.findGenreById(id);
     }
 }

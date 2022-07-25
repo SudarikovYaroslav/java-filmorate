@@ -22,7 +22,7 @@ public class ValidationService {
 
     public void validate(Film film) {
         validateNotNull(film);
-        checkFilmId(film.getId());
+        validateFilmId(film.getId());
         if (film.getName() == null) {
             String message = "Объект Film некорректно инициализирован, есть null поля! id: " + film.getId();
             log.warn(message);
@@ -112,25 +112,25 @@ public class ValidationService {
         }
     }
 
-    public void checkId(long id) {
+    public void validateId(long id) {
         if (id <= 0) throw new IllegalIdException("id должен быть больше нуля");
     }
 
-    public void checkNegativeIds(long... ids) {
+    public void validateIds(long... ids) {
         for (long id : ids) {
             if (id <= 0 ) throw new IllegalIdException("user id:" + id + " отрицательный");
         }
     }
 
-    public void checkFilmId(long id) {
+    public void validateFilmId(long id) {
         if (id < 0) throw new IllegalIdException("film id:" + id + " отрицательный");
     }
 
-    public void checkUserId(long id) {
+    public void validateUserId(long id) {
         if (id < 0) throw new IllegalIdException("user id: " + id + " отрицательный");
     }
 
-    public void checkDirectorId(long id) {
+    public void validateDirectorId(long id) {
         if (id < 0) throw new IllegalIdException("director id: " + id + " отрицательный");
     }
 }
