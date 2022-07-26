@@ -11,10 +11,12 @@ import java.util.List;
 public class MpaService {
 
     private final MpaRatingDao mpaRatingDao;
+    private final ValidationService validationService;
 
     @Autowired
-    public MpaService(MpaRatingDao mpaRatingDao) {
+    public MpaService(MpaRatingDao mpaRatingDao, ValidationService validationService) {
         this.mpaRatingDao = mpaRatingDao;
+        this.validationService = validationService;
     }
 
     public List<Mpa> findAllMpaRatings() {
@@ -22,6 +24,7 @@ public class MpaService {
     }
 
     public Mpa findMpaRatingById(long id) {
+        validationService.validateId(id);
         return mpaRatingDao.findMpaRatingById(id);
     }
 }

@@ -33,4 +33,16 @@ public class ErrorHandler {
     public ErrorResponse handle(Exception e) {
         return new ErrorResponse("Internal server error", e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handle(InvalidDirectorException e) {
+        return new ErrorResponse("Director validation error", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleStorageException(StorageException e) {
+        return new ErrorResponse("NOT_FOUND", e.getMessage());
+    }
 }
