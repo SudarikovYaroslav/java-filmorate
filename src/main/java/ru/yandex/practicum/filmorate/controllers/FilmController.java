@@ -47,13 +47,13 @@ public class FilmController {
         return filmService.getDirectorFilms(directorId, sortBy);
     }
 
-    @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable long id, @PathVariable long userId) {
-        filmService.addLike(id, userId);
+    @PutMapping("/{id}/mark/{userId}/{mark}")
+    public void addMark(@PathVariable long id, @PathVariable long userId, @PathVariable int mark) {
+        filmService.addMark(id, userId, mark);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
+    @DeleteMapping("/{id}/mark/{userId}")
+    public void deleteMark(@PathVariable long id, @PathVariable long userId) {
         filmService.deleteLike(id, userId);
     }
 
@@ -78,4 +78,9 @@ public class FilmController {
     public List<Film> getCommonFilms(HttpServletRequest request) {
         return filmService.getCommonFilms(request.getParameter("userId"), request.getParameter("friendId"));
     }
+    @GetMapping("/avgMark/{id}")
+    public Double findAvgMark(@PathVariable long id) {
+        return filmService.findAvgMark(id);
+    }
+
 }

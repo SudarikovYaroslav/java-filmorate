@@ -8,8 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.sorts.SortingType;
 import ru.yandex.practicum.filmorate.storage.dao.FeedDao;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
-import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
-import ru.yandex.practicum.filmorate.storage.impl.DbFeedDaoImpl;
+import ru.yandex.practicum.filmorate.storage.dao.MarkDao;
 
 import java.time.Instant;
 import java.util.List;
@@ -20,19 +19,19 @@ import java.util.stream.Stream;
 public class FilmService {
 
     private final FilmDao filmDao;
-    private final LikeDao likeDao;
+    private final MarkDao markDao;
     private final FeedDao feedDao;
     private final DirectorService directorService;
     private final ValidationService validationService;
 
     @Autowired
     public FilmService(@Qualifier("dbFilmDaoImpl") FilmDao filmDao,
-                       LikeDao likeDao,
+                       MarkDao markDao,
                        DirectorService directorService,
                        FeedDao feedDao,
                        ValidationService validationService) {
         this.filmDao = filmDao;
-        this.likeDao = likeDao;
+        this.markDao = markDao;
         this.directorService = directorService;
         this.feedDao = feedDao;
         this.validationService = validationService;
@@ -59,29 +58,30 @@ public class FilmService {
 
     public List<Film> searchFilms(String query, String directorAndTitle) {
         List<Film> result = filmDao.searchFilms(query, directorAndTitle);
-        result.sort((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())));
+        result.sort((f1, f2) -> (int) (markDao.findAvgMark(f2.getId()) - markDao.findAvgMark(f1.getId())));
         return result;
     }
 
-    public void addLike(long filmId, long userId) {
+    public void addMark(long filmId, long userId, int mark) {
         validationService.validateFilmId(filmId);
         validationService.validateUserId(userId);
+        validationService.validateMark(mark);
         feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
-                userId, "LIKE", "ADD", filmId));
-        likeDao.addLike(filmId, userId);
+                userId, "MARK", "ADD", filmId));
+        markDao.addMark(filmId, userId, mark);
     }
 
     public void deleteLike(long filmId, long userId) {
         validationService.validateFilmId(filmId);
         validationService.validateUserId(userId);
         feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
-                userId, "LIKE", "REMOVE", filmId));
-        likeDao.deleteLike(filmId, userId);
+                userId, "MARK", "REMOVE", filmId));
+        markDao.deleteMark(filmId, userId);
     }
 
     public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
         return getStreamFilmsByGenreId(getStreamFilmsByYear(filmDao.findAll().stream(), year), genreId)
-                .sorted((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())))
+                .sorted((f1, f2) -> (int) (markDao.findAvgMark(f2.getId()) - markDao.findAvgMark(f1.getId())))
                 .limit(count)
                 .collect(Collectors.toList());
     }
@@ -97,7 +97,7 @@ public class FilmService {
 
     public List<Film> getCommonFilms(String userId, String friendId) {
         List<Film> result = filmDao.getCommonFilms(userId, friendId);
-        result.sort((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())));
+        result.sort((f1, f2) -> (int) (markDao.findAvgMark(f2.getId()) - markDao.findAvgMark(f1.getId())));
         return result;
     }
 
@@ -110,5 +110,10 @@ public class FilmService {
         validationService.validateDirectorId(directorId);
         directorService.checkIfDirectorExists(directorId);
         return filmDao.getDirectorFilms(directorId, sortBy);
+    }
+
+    public Double findAvgMark(long filmId){
+        validationService.validateFilmId(filmId);
+        return markDao.findAvgMark(filmId);
     }
 }
