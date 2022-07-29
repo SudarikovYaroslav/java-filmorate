@@ -13,3 +13,4 @@ merge into MPA_RATINGS (MPA_RATING_ID, mpa_name) values (5, 'NC-17');
 
 merge into FRIENDSHIP_STATUSES (FRIENDSHIP_STATUS_ID, status_name) values (1, 'неподтверждённая');
 merge into FRIENDSHIP_STATUSES (FRIENDSHIP_STATUS_ID, status_name) values (2, 'подтверждённая');
+

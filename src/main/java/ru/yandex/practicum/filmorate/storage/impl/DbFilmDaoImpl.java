@@ -141,9 +141,9 @@ public class DbFilmDaoImpl implements FilmDao {
     public List<Film> getDirectorFilms(long directorId, SortingType sortBy) {
         List<Film> result = new ArrayList<>();
         String sqlQuery;
-        if (sortBy.equals(SortingType.LIKES)) {
+        if (sortBy.equals(SortingType.MARKS)) {
             sqlQuery = "select FD.FILM_ID from FILM_DIRECTORS as FD " +
-                    "left join LIKES L on FD.FILM_ID = L.FILM_ID " +
+                    "left join MARKS L on FD.FILM_ID = L.FILM_ID " +
                     "where DIRECTOR_ID = ? " +
                     "group by FD.FILM_ID " +
                     "ORDER BY COUNT(USER_ID);";
@@ -168,7 +168,7 @@ public class DbFilmDaoImpl implements FilmDao {
     @Override
     public List<Film> findAllFavoriteMovies(Long id) {
         String sqlQuery = "select * " +
-                "from LIKES L " +
+                "from MARKS L " +
                 "join FILMS F on F.FILM_ID = L.FILM_ID " +
                 "where L.USER_ID = ?; ";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs, 0), id);
@@ -180,20 +180,21 @@ public class DbFilmDaoImpl implements FilmDao {
                 "select " +
                 "    l.USER_ID user_recommendations, " +
                 "    count(1) cnt_films " +
-                "from LIKES l " +
-                "join LIKES l2 on l2.FILM_ID = l.FILM_ID " +
+                "from MARKS l " +
+                "join MARKS l2 on l2.FILM_ID = l.FILM_ID " +
                 "                     and l2.USER_ID != l.USER_ID " +
+                "and l2.MARK = l.MARK " +
                 "where l2.USER_ID = ? " +
                 "group by user_recommendations " +
                 "order by cnt_films desc " +
                 ") " +
                 "select * " +
-                "from LIKES L " +
+                "from MARKS L " +
                 "join FILMS F on F.FILM_ID = L.FILM_ID " +
                 "where L.USER_ID = (select user_recommendations " +
                 "from GENERAL_FILMS" +
                 "                   group by user_recommendations" +
-                "                   limit 1); ";
+                "                   limit 1) AND L.MARK > 5;";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs, 0), id);
     }
 

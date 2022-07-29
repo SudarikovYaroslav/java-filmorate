@@ -133,4 +133,9 @@ public class ValidationService {
     public void validateDirectorId(long id) {
         if (id < 0) throw new IllegalIdException("director id: " + id + " отрицательный");
     }
+
+    public void validateMark(int mark) {
+        if (mark <= 0 || mark > 10)
+            throw new IllegalStateException("Оценка должна быть в диапазоне от 1 до 10 включительно");
+    }
 }

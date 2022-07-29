@@ -50,10 +50,11 @@ create table if not exists USER_FRIENDS
     PRIMARY KEY (user_id, friend_id)
 );
 
-create table if not exists LIKES
+create table if not exists MARKS
 (
     film_id int references FILMS (film_id) on delete cascade,
     user_id int references USERS (user_id) on delete cascade,
+    mark int not null,
     primary key (film_id, user_id)
 );
 
