@@ -17,10 +17,10 @@ import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
-@Qualifier("filmDbStorage")
 public class DbFilmDaoImpl implements FilmDao {
     public static String FILMS_TABLE = "FILMS";
     public static String FILM_ID_COLUMN = "film_id";
@@ -61,6 +61,7 @@ public class DbFilmDaoImpl implements FilmDao {
 
     @Override
     public Film update(Film film) {
+        findFilmById(film.getId());
         String sqlQueryFilms =
                 "update FILMS set " +
                         "film_name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? " +
@@ -89,7 +90,10 @@ public class DbFilmDaoImpl implements FilmDao {
     @Override
     public List<Film> findAll() {
         String sqlQuery = "select * from FILMS";
-        return jdbcTemplate.query(sqlQuery, this::makeFilm);
+        return jdbcTemplate.query(sqlQuery, this::makeFilm)
+                .stream()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -108,14 +112,20 @@ public class DbFilmDaoImpl implements FilmDao {
         switch (splitedRequest.length) {
             case (1):
                 if (splitedRequest[0].equals("title")) {
-                    return getFilmsByPartOfTitle(query);
+                    return getFilmsByPartOfTitle(query).stream()
+                            .sorted()
+                            .collect(Collectors.toList());
                 }
-                return getFilmsByPartOfDirectorName(query);
+                return getFilmsByPartOfDirectorName(query).stream()
+                        .sorted()
+                        .collect(Collectors.toList());
             case (2):
                 List<Film> filmsWithSearchedNames = getFilmsByPartOfTitle(query);
                 List<Film> filmsWithSearchedDirectors = getFilmsByPartOfDirectorName(query);
                 filmsWithSearchedNames.addAll(filmsWithSearchedDirectors);
-                return filmsWithSearchedNames;
+                return filmsWithSearchedNames.stream()
+                        .sorted()
+                        .collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
@@ -127,7 +137,9 @@ public class DbFilmDaoImpl implements FilmDao {
         List<Film> firstUserFilms = findAllFavoriteMovies(first);
         List<Film> secondUserFilms = findAllFavoriteMovies(second);
         firstUserFilms.retainAll(secondUserFilms);
-        return firstUserFilms;
+        return firstUserFilms.stream()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -139,30 +151,22 @@ public class DbFilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getDirectorFilms(long directorId, SortingType sortBy) {
-        List<Film> result = new ArrayList<>();
-        String sqlQuery;
-        if (sortBy.equals(SortingType.MARKS)) {
-            sqlQuery = "select FD.FILM_ID from FILM_DIRECTORS as FD " +
-                    "left join MARKS L on FD.FILM_ID = L.FILM_ID " +
-                    "where DIRECTOR_ID = ? " +
-                    "group by FD.FILM_ID " +
-                    "ORDER BY COUNT(USER_ID);";
+        String sqlQuery = "select * from FILM_DIRECTORS as FD " +
+                "join FILMS F on FD.FILM_ID = F.FILM_ID  " +
+                "where DIRECTOR_ID = ?";
+        List<Film> result = jdbcTemplate.query(sqlQuery, this::makeFilm, directorId);
+        if (sortBy.equals(SortingType.LIKES)) {
+            return result.stream()
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
+        return result.stream()
+                .sorted(this::compare)
+                .collect(Collectors.toList());
+    }
 
-        } else {
-            sqlQuery = "select FD.FILM_ID from FILM_DIRECTORS as FD " +
-                    "join FILMS F on FD.FILM_ID = F.FILM_ID " +
-                    "WHERE DIRECTOR_ID = ? " +
-                    "order by RELEASE_DATE;";
-        }
-        List<Long> filmsId = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilmId(rs), directorId);
-        for (Long filmId : filmsId) {
-            Film film = findFilmById(filmId).isPresent() ? findFilmById(filmId).get() : null;
-            if (film != null) {
-                if (film.getGenres().isEmpty()) film.setGenres(null);
-                result.add(film);
-            }
-        }
-        return result;
+    private int compare(Film p0, Film p1) {
+        return (p0.getReleaseDate().compareTo(p1.getReleaseDate()));
     }
 
     @Override
@@ -183,7 +187,7 @@ public class DbFilmDaoImpl implements FilmDao {
                 "from MARKS l " +
                 "join MARKS l2 on l2.FILM_ID = l.FILM_ID " +
                 "                     and l2.USER_ID != l.USER_ID " +
-                "and l2.MARK = l.MARK " +
+                "and l2.MARK > 5 and l.MARK > 5 " +
                 "where l2.USER_ID = ? " +
                 "group by user_recommendations " +
                 "order by cnt_films desc " +
@@ -206,16 +210,26 @@ public class DbFilmDaoImpl implements FilmDao {
         long filmId = rs.getLong(FILM_ID_COLUMN);
         List<Genre> genres = findGenresByFilmId(filmId);
         List<Director> directors = findDirectorsByFilmId(filmId);
+        Double rate = 0.0;
+        if (findRateFilm(filmId)!=null){
+            rate = findRateFilm(filmId);
+        }
         return Film.builder()
                 .id(filmId)
                 .name(rs.getString(FILM_NAME_COLUMN))
                 .description((rs.getString(DESCRIPTION_COLUMN)))
                 .releaseDate(rs.getDate(RELEASE_DATE_COLUMN).toLocalDate())
                 .duration(rs.getLong(DURATION_COLUMN))
+                .rate(rate)
                 .mpa(makeMpaById(rs.getLong(MPA_RATING_ID_COLUMN)))
                 .genres(genres)
                 .directors(directors)
                 .build();
+    }
+
+    public Double findRateFilm(long filmId) {
+        String sqlQuery = "select AVG(CAST(mark as real)) from (select * from MARKS where film_id = ?)";
+        return jdbcTemplate.queryForObject(sqlQuery, Double.class, filmId);
     }
 
     private Mpa makeMpaById(long mpaId) {

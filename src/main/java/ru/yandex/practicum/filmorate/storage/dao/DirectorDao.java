@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface DirectorDao {
     List<Director> findAll();
 
-    Optional<Director> findDirectorById(long directorId);
+    Director findDirectorById(long directorId);
 
     Director save(Director director);
 

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.dao.GenreDao;
 
@@ -32,7 +33,11 @@ public class GenreDaoImpl implements GenreDao {
     @Override
     public Genre findGenreById(long id) {
         String sqlQuery = "select * from GENRES where GENRE_ID = ?";
-        return jdbcTemplate.query(sqlQuery, this::makeGenre, id).get(0);
+        List<Genre> genres =  jdbcTemplate.query(sqlQuery, this::makeGenre, id);
+        if (genres.size() != 1) {
+            throw new StorageException("Жанра с таким id нет в базе данных");
+        }
+        return genres.get(0);
     }
 
     private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {

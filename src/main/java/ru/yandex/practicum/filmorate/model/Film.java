@@ -12,12 +12,13 @@ import java.util.Objects;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Film {
+public class Film implements Comparable<Film>{
     private long id;
     private String name;
     private String description;
     private LocalDate releaseDate;
     private long duration;
+    private Double rate;
     private Mpa mpa;
     private List<Genre> genres = new ArrayList<>();
     private List<Director> directors = new ArrayList<>();
@@ -33,5 +34,10 @@ public class Film {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public int compareTo(Film o) {
+        return (int) (o.getRate() - rate);
     }
 }

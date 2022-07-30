@@ -1,14 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.sorts.SortingType;
-import ru.yandex.practicum.filmorate.storage.dao.FeedDao;
-import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
-import ru.yandex.practicum.filmorate.storage.dao.MarkDao;
+import ru.yandex.practicum.filmorate.storage.dao.*;
 
 import java.time.Instant;
 import java.util.List;
@@ -21,19 +18,21 @@ public class FilmService {
     private final FilmDao filmDao;
     private final MarkDao markDao;
     private final FeedDao feedDao;
-    private final DirectorService directorService;
+    private final DirectorDao directorDao;
+    private final UserDao userDao;
     private final ValidationService validationService;
 
     @Autowired
-    public FilmService(@Qualifier("dbFilmDaoImpl") FilmDao filmDao,
+    public FilmService(FilmDao filmDao,
                        MarkDao markDao,
-                       DirectorService directorService,
                        FeedDao feedDao,
-                       ValidationService validationService) {
+                       DirectorDao directorDao,
+                       UserDao userDao, ValidationService validationService) {
         this.filmDao = filmDao;
         this.markDao = markDao;
-        this.directorService = directorService;
+        this.directorDao = directorDao;
         this.feedDao = feedDao;
+        this.userDao = userDao;
         this.validationService = validationService;
     }
 
@@ -52,36 +51,31 @@ public class FilmService {
     }
 
     public Film getFilmById(long id) {
-        validationService.validateFilmId(id);
         return filmDao.findFilmById(id).orElse(null);
     }
 
     public List<Film> searchFilms(String query, String directorAndTitle) {
-        List<Film> result = filmDao.searchFilms(query, directorAndTitle);
-        result.sort((f1, f2) -> (int) (markDao.findAvgMark(f2.getId()) - markDao.findAvgMark(f1.getId())));
-        return result;
+        return filmDao.searchFilms(query, directorAndTitle);
     }
 
     public void addMark(long filmId, long userId, int mark) {
-        validationService.validateFilmId(filmId);
-        validationService.validateUserId(userId);
-        validationService.validateMark(mark);
+        filmDao.findFilmById(filmId);
+        userDao.findUserById(userId);
         feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
-                userId, "MARK", "ADD", filmId));
+                userId, "LIKE", "ADD", filmId));
         markDao.addMark(filmId, userId, mark);
     }
 
     public void deleteLike(long filmId, long userId) {
-        validationService.validateFilmId(filmId);
-        validationService.validateUserId(userId);
+        filmDao.findFilmById(filmId);
+        userDao.findUserById(userId);
         feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
-                userId, "MARK", "REMOVE", filmId));
+                userId, "LIKE", "REMOVE", filmId));
         markDao.deleteMark(filmId, userId);
     }
 
     public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
         return getStreamFilmsByGenreId(getStreamFilmsByYear(filmDao.findAll().stream(), year), genreId)
-                .sorted((f1, f2) -> (int) (markDao.findAvgMark(f2.getId()) - markDao.findAvgMark(f1.getId())))
                 .limit(count)
                 .collect(Collectors.toList());
     }
@@ -96,24 +90,17 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilms(String userId, String friendId) {
-        List<Film> result = filmDao.getCommonFilms(userId, friendId);
-        result.sort((f1, f2) -> (int) (markDao.findAvgMark(f2.getId()) - markDao.findAvgMark(f1.getId())));
-        return result;
+        return filmDao.getCommonFilms(userId, friendId);
     }
 
     public void deleteFilmById(Long filmId) {
-        validationService.validateFilmId(filmId);
+        filmDao.findFilmById(filmId);
         filmDao.deleteFilmById(filmId);
     }
 
     public List<Film> getDirectorFilms(long directorId, SortingType sortBy) {
-        validationService.validateDirectorId(directorId);
-        directorService.checkIfDirectorExists(directorId);
+        directorDao.findDirectorById(directorId);
         return filmDao.getDirectorFilms(directorId, sortBy);
     }
 
-    public Double findAvgMark(long filmId){
-        validationService.validateFilmId(filmId);
-        return markDao.findAvgMark(filmId);
-    }
 }

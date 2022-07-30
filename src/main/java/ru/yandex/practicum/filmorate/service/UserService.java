@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.dao.FeedDao;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import ru.yandex.practicum.filmorate.storage.dao.FriendshipDao;
 import ru.yandex.practicum.filmorate.storage.dao.UserDao;
-import ru.yandex.practicum.filmorate.storage.impl.DbFeedDaoImpl;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -57,20 +56,21 @@ public class UserService {
     }
 
     public User getUserById(long id) {
-        validationService.validateIds(id);
         return userDao.findUserById(id)
                 .orElseThrow(() -> new IllegalIdException(String.format("Пользователь %d не найден", id)));
     }
 
     public void addFriend(long userId, long friendId) {
-        validationService.validateIds(userId, friendId);
+        getUserById(userId);
+        getUserById(friendId);
         Feed feed = new Feed(1, Instant.now().toEpochMilli(), userId,"FRIEND","ADD", friendId);
         feedDao.saveFeed(feed);
         friendshipDao.addFriend(userId, friendId);
     }
 
     public void deleteFriend(long userId, long friendId) {
-        validationService.validateIds(userId, friendId);
+        getUserById(userId);
+        getUserById(friendId);
         Feed feed = new Feed(1, Instant.now().toEpochMilli(), userId,"FRIEND","REMOVE",
                 friendId);
         feedDao.saveFeed(feed);
@@ -78,7 +78,7 @@ public class UserService {
     }
 
     public List<User> getUserFriends(long id) {
-        validationService.validateIds(id);
+        getUserById(id);
         List<User> result = new ArrayList<>();
         Optional<User> optionalUser = userDao.findUserById(id);
         if (optionalUser.isPresent()) {
@@ -91,7 +91,8 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(long user1Id, long user2Id) {
-        validationService.validateIds(user1Id, user2Id);
+        getUserById(user1Id);
+        getUserById(user2Id);
         List<User> commonFriends = new ArrayList<>();
         List<Long> user1FriendsId = friendshipDao.getFriends(user1Id);
         List<Long> user2FriendsId = friendshipDao.getFriends(user2Id);
@@ -104,12 +105,12 @@ public class UserService {
     }
 
     public void deleteUserById(Long userId) {
-        validationService.validateIds(userId);
+        getUserById(userId);
         userDao.deleteUserById(userId);
     }
 
     public List<Film> recommendationsFilms(Long id) {
-        validationService.validateIds(id);
+        getUserById(id);
         List<Film> userFilms = new ArrayList<>(filmDao.findAllFavoriteMovies(id));
         List<Film> recommendationsFilms = new ArrayList<>(filmDao.recommendationsFilm(id));
         return recommendationsFilms.stream()
