@@ -27,5 +27,11 @@ public interface FilmDao {
 
     List<Film> searchFilms(String query, String directorAndTitle);
 
-    List<Film> getCommonFilms(String userId, String friendId);
+    List<Film> getCommonFilms(long userId, long friendId);
+
+    List<Film> findFilmByYear(Integer year);
+
+    List<Film> findFilmByGenre(Long genre);
+
+    List<Film> findFilmByGenreAndYear(Long genre, Integer year);
 }

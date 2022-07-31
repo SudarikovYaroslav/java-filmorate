@@ -5,5 +5,4 @@ public interface MarkDao {
 
     void deleteMark(long film, long user);
 
-    Double findAvgMark(long film);
 }

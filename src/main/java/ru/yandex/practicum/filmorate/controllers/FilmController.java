@@ -80,8 +80,8 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public List<Film> getCommonFilms(HttpServletRequest request) {
-        return filmService.getCommonFilms(request.getParameter("userId"), request.getParameter("friendId"));
+    public List<Film> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
 
 }

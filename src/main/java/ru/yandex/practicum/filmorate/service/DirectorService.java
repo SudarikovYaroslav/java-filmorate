@@ -41,8 +41,6 @@ public class DirectorService {
     }
 
     public void delete(long directorId) {
-       getDirectorById(directorId);
-        checkIfDirectorExists(directorId);
         directorDao.delete(directorId);
     }
 

@@ -57,7 +57,7 @@ public class ReviewService {
                 && (filmDao.findFilmById(review.getFilmId()).isPresent())) {
             Review newReview = reviewDao.save(review);
             newReview.setUseful(0);
-            feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+            feedDao.saveFeed(new Feed(Instant.now().toEpochMilli(),
                     review.getUserId(), "REVIEW", "ADD", review.getReviewId()));
             return newReview;
         }
@@ -72,7 +72,7 @@ public class ReviewService {
         }
         Review newReview = reviewDao.update(review);
         newReview.setUseful(rateReviews(review.getReviewId()));
-        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        feedDao.saveFeed(new Feed(Instant.now().toEpochMilli(),
                 newReview.getUserId(), "REVIEW", "UPDATE", newReview.getReviewId()));
         return newReview;
     }
@@ -87,9 +87,9 @@ public class ReviewService {
     }
 
     public boolean delete(long id) {
-        if (reviewDao.findReviewById(id).isPresent()) {
-            Review review = reviewDao.findReviewById(id).get();
-            feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        Review review = reviewDao.findReviewById(id).orElse(null);
+        if (review != null) {
+            feedDao.saveFeed(new Feed(Instant.now().toEpochMilli(),
                     review.getUserId(), "REVIEW", "REMOVE", review.getReviewId()));
             return reviewDao.delete(id);
         } else {

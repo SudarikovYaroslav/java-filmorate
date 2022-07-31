@@ -23,6 +23,7 @@ create table if not exists FILMS
     description   varchar(200),
     release_date  timestamp,
     duration      int,
+    rate real,
     mpa_rating_id int references MPA_RATINGS (mpa_rating_id)
 );
 

@@ -63,7 +63,7 @@ public class UserService {
     public void addFriend(long userId, long friendId) {
         getUserById(userId);
         getUserById(friendId);
-        Feed feed = new Feed(1, Instant.now().toEpochMilli(), userId,"FRIEND","ADD", friendId);
+        Feed feed = new Feed(Instant.now().toEpochMilli(), userId,"FRIEND","ADD", friendId);
         feedDao.saveFeed(feed);
         friendshipDao.addFriend(userId, friendId);
     }
@@ -71,7 +71,7 @@ public class UserService {
     public void deleteFriend(long userId, long friendId) {
         getUserById(userId);
         getUserById(friendId);
-        Feed feed = new Feed(1, Instant.now().toEpochMilli(), userId,"FRIEND","REMOVE",
+        Feed feed = new Feed(Instant.now().toEpochMilli(), userId,"FRIEND","REMOVE",
                 friendId);
         feedDao.saveFeed(feed);
         friendshipDao.deleteFriend(userId, friendId);

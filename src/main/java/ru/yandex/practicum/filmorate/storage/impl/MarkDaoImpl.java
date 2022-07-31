@@ -5,9 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.storage.dao.MarkDao;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 @Repository
 public class MarkDaoImpl implements MarkDao {
 
@@ -19,23 +16,29 @@ public class MarkDaoImpl implements MarkDao {
     }
 
     @Override
-    public void addMark(long film, long user, int mark) {
+    public void addMark(long filmId, long userId, int mark) {
         String sqlQuery = "insert into MARKS (film_id, user_id, mark) " +
                 "values (?, ?, ?)";
-        jdbcTemplate.update(sqlQuery,
-                film,
-                user, mark);
+        jdbcTemplate.update(sqlQuery, filmId, userId, mark);
+        String sqlQueryFilms = "update FILMS set RATE = ? where film_id = ?";
+        jdbcTemplate.update(sqlQueryFilms,
+                findRateFilm(filmId),
+                filmId);
     }
 
     @Override
-    public void deleteMark(long film, long user) {
+    public void deleteMark(long filmId, long userId) {
         String sqlQuery = "delete FROM MARKS where film_id = ? and user_id = ?";
-        jdbcTemplate.update(sqlQuery, film, user);
+        jdbcTemplate.update(sqlQuery, filmId, userId);
+        String sqlQueryFilms = "update FILMS set RATE = ? where film_id = ?";
+        jdbcTemplate.update(sqlQueryFilms,
+                findRateFilm(filmId),
+                filmId);
     }
 
-    @Override
-    public Double findAvgMark(long film) {
+    private Double findRateFilm(long filmId) {
         String sqlQuery = "select AVG(CAST(mark as real)) from (select * from MARKS where film_id = ?)";
-        return jdbcTemplate.queryForObject(sqlQuery, Double.class, film);
+        return jdbcTemplate.queryForObject(sqlQuery, Double.class, filmId);
     }
+
 }

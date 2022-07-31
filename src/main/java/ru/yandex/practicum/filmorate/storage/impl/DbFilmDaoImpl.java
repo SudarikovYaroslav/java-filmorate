@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -35,6 +34,9 @@ public class DbFilmDaoImpl implements FilmDao {
     public static String MPA_RATING_ID_COLUMN = "mpa_rating_id";
     public static String DIRECTOR_NAME_COLUMN = "director_name";
 
+    public static String RATE_COLUMN = "rate";
+
+
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -64,13 +66,14 @@ public class DbFilmDaoImpl implements FilmDao {
         findFilmById(film.getId());
         String sqlQueryFilms =
                 "update FILMS set " +
-                        "film_name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? " +
+                        "film_name = ?, description = ?, release_date = ?, duration = ?, rate = ?, mpa_rating_id = ? " +
                         "where film_id = ?";
         jdbcTemplate.update(sqlQueryFilms,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
+                film.getRate(),
                 film.getMpa().getId(),
                 film.getId());
         if (film.getGenres() != null) updateFilmGenresTable(film);
@@ -120,22 +123,40 @@ public class DbFilmDaoImpl implements FilmDao {
                         .sorted()
                         .collect(Collectors.toList());
             case (2):
-                List<Film> filmsWithSearchedNames = getFilmsByPartOfTitle(query);
-                List<Film> filmsWithSearchedDirectors = getFilmsByPartOfDirectorName(query);
-                filmsWithSearchedNames.addAll(filmsWithSearchedDirectors);
+                List<Film> filmsWithSearchedNames = getFilmsByPartOfTitleAndDirectorName(query);
                 return filmsWithSearchedNames.stream()
                         .sorted()
                         .collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
+    private List<Film> getFilmsByPartOfTitle(String filmNamePart) {
+        String sqlForFilmsWithSearchedNames = "SELECT * FROM FILMS WHERE LCASE(FILM_NAME) " +
+                "LIKE '%" + filmNamePart.toLowerCase() + "%'";
+        return jdbcTemplate.query(sqlForFilmsWithSearchedNames, this::makeFilm);
 
+    }
+
+    private List<Film> getFilmsByPartOfDirectorName(String directorNamePart) {
+        String sqlForFilmsWithSearchedDirectors = "SELECT * FROM FILMS WHERE FILM_ID IN " +
+                "(SELECT FILM_ID FROM FILM_DIRECTORS " +
+                "where DIRECTOR_ID IN (SELECT DIRECTORS.DIRECTOR_ID FROM DIRECTORS " +
+                "where LCASE(DIRECTOR_NAME) like '%" + directorNamePart.toLowerCase() + "%'))";
+        return jdbcTemplate.query(sqlForFilmsWithSearchedDirectors, this::makeFilm);
+    }
+    private List<Film> getFilmsByPartOfTitleAndDirectorName(String query) {
+        String sql = "SELECT * FROM FILMS WHERE LCASE(FILM_NAME) " +
+                "LIKE '%" + query.toLowerCase() + "%' and FILM_ID IN " +
+               "(SELECT FILM_ID FROM FILM_DIRECTORS " +
+                "where DIRECTOR_ID IN (SELECT DIRECTORS.DIRECTOR_ID FROM DIRECTORS " +
+                "where LCASE(DIRECTOR_NAME) like '%" + query.toLowerCase() + "%'))";
+        return jdbcTemplate.query(sql, this::makeFilm);
+
+    }
     @Override
-    public List<Film> getCommonFilms(String userId, String friendId) {
-        Long first = Long.parseLong(userId);
-        Long second = Long.parseLong(userId);
-        List<Film> firstUserFilms = findAllFavoriteMovies(first);
-        List<Film> secondUserFilms = findAllFavoriteMovies(second);
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        List<Film> firstUserFilms = findAllFavoriteMovies(userId);
+        List<Film> secondUserFilms = findAllFavoriteMovies(friendId);
         firstUserFilms.retainAll(secondUserFilms);
         return firstUserFilms.stream()
                 .sorted()
@@ -202,34 +223,21 @@ public class DbFilmDaoImpl implements FilmDao {
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs, 0), id);
     }
 
-    private long makeFilmId(ResultSet rs) throws SQLException {
-        return rs.getLong("film_id");
-    }
-
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         long filmId = rs.getLong(FILM_ID_COLUMN);
         List<Genre> genres = findGenresByFilmId(filmId);
         List<Director> directors = findDirectorsByFilmId(filmId);
-        Double rate = 0.0;
-        if (findRateFilm(filmId)!=null){
-            rate = findRateFilm(filmId);
-        }
         return Film.builder()
                 .id(filmId)
                 .name(rs.getString(FILM_NAME_COLUMN))
                 .description((rs.getString(DESCRIPTION_COLUMN)))
                 .releaseDate(rs.getDate(RELEASE_DATE_COLUMN).toLocalDate())
                 .duration(rs.getLong(DURATION_COLUMN))
-                .rate(rate)
+                .rate(rs.getDouble(RATE_COLUMN))
                 .mpa(makeMpaById(rs.getLong(MPA_RATING_ID_COLUMN)))
                 .genres(genres)
                 .directors(directors)
                 .build();
-    }
-
-    public Double findRateFilm(long filmId) {
-        String sqlQuery = "select AVG(CAST(mark as real)) from (select * from MARKS where film_id = ?)";
-        return jdbcTemplate.queryForObject(sqlQuery, Double.class, filmId);
     }
 
     private Mpa makeMpaById(long mpaId) {
@@ -340,29 +348,48 @@ public class DbFilmDaoImpl implements FilmDao {
         jdbcTemplate.update(sqlQuery, film.getId());
     }
 
-
-    private List<Film> getFilmsByPartOfTitle(String filmNamePart) {
-        String sqlForFilmsWithSearchedNames = "SELECT * FROM FILMS WHERE LCASE(FILM_NAME) " +
-                "LIKE '%" + filmNamePart.toLowerCase() + "%'";
-        return jdbcTemplate.query(sqlForFilmsWithSearchedNames, this::makeFilm);
-
-    }
-
-    private List<Film> getFilmsByPartOfDirectorName(String directorNamePart) {
-        String sqlForFilmsWithSearchedDirectors = "SELECT * FROM FILMS WHERE FILM_ID IN " +
-                "(SELECT FILM_ID FROM FILM_DIRECTORS " +
-                "where DIRECTOR_ID IN (SELECT DIRECTORS.DIRECTOR_ID FROM DIRECTORS " +
-                "where LCASE(DIRECTOR_NAME) like '%" + directorNamePart.toLowerCase() + "%'))";
-        return jdbcTemplate.query(sqlForFilmsWithSearchedDirectors, this::makeFilm);
-    }
-
     private Map<String, Object> toMap(Film film) {
         Map<String, Object> values = new HashMap<>();
         values.put(FILM_NAME_COLUMN, film.getName());
         values.put(DESCRIPTION_COLUMN, film.getDescription());
         values.put(RELEASE_DATE_COLUMN, film.getReleaseDate());
         values.put(DURATION_COLUMN, film.getDuration());
+        values.put(RATE_COLUMN, film.getRate());
         values.put(MPA_RATING_ID_COLUMN, film.getMpa().getId());
         return values;
+    }
+
+    @Override
+    public List<Film> findFilmByYear(Integer year) {
+        String sqlQuery = "select * from FILMS where FORMATDATETIME(FILMS.RELEASE_DATE,'yyyy') = " + year;
+        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm);
+        if (films.isEmpty()) {
+            throw new IllegalIdException(String.format("Фильмов вышедших в %d году нет в базе", year));
+        }
+        return films;
+    }
+
+    @Override
+    public List<Film> findFilmByGenre(Long genre) {
+        String sqlQuery = "select * from FILMS join FILM_GENRES FG on FILMS.FILM_ID = FG.FILM_ID " +
+                "where FG.GENRE_ID = " + genre;
+        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm);
+        if (films.isEmpty()) {
+            throw new IllegalIdException(String.format("Фильмов в жанре %d нет в базе", genre));
+        }
+        return films;
+    }
+
+    @Override
+    public List<Film> findFilmByGenreAndYear(Long genre, Integer year) {
+        String sqlQuery = "select * from FILMS join FILM_GENRES FG on FILMS.FILM_ID = FG.FILM_ID " +
+                "where FG.GENRE_ID = " + genre +
+                " and FORMATDATETIME(FILMS.RELEASE_DATE,'yyyy') = " + year;
+        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm);
+        if (films.isEmpty()) {
+            throw new IllegalIdException(String.format
+                    ("Фильмов в жанре %d и вышедших в %d году нет в базе", genre, year));
+        }
+        return films;
     }
 }

@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.dao.*;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class FilmService {
@@ -61,7 +60,7 @@ public class FilmService {
     public void addMark(long filmId, long userId, int mark) {
         filmDao.findFilmById(filmId);
         userDao.findUserById(userId);
-        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        feedDao.saveFeed(new Feed(Instant.now().toEpochMilli(),
                 userId, "LIKE", "ADD", filmId));
         markDao.addMark(filmId, userId, mark);
     }
@@ -69,32 +68,27 @@ public class FilmService {
     public void deleteLike(long filmId, long userId) {
         filmDao.findFilmById(filmId);
         userDao.findUserById(userId);
-        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        feedDao.saveFeed(new Feed(Instant.now().toEpochMilli(),
                 userId, "LIKE", "REMOVE", filmId));
         markDao.deleteMark(filmId, userId);
     }
 
     public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
-        return getStreamFilmsByGenreId(getStreamFilmsByYear(filmDao.findAll().stream(), year), genreId)
-                .limit(count)
-                .collect(Collectors.toList());
+        if (genreId == null && year == null) {
+            return filmDao.findAll().stream().limit(count).collect(Collectors.toList());
+        } else if (genreId == null) {
+            return filmDao.findFilmByYear(year).stream().limit(count).collect(Collectors.toList());
+        } else if (year == null) {
+            return filmDao.findFilmByGenre(genreId).stream().limit(count).collect(Collectors.toList());
+        } else {
+            return filmDao.findFilmByGenreAndYear(genreId, year).stream().limit(count).collect(Collectors.toList());
+        }
     }
-
-    private Stream<Film> getStreamFilmsByGenreId(Stream<Film> filmStream, Long genreId) {
-        return genreId == null ? filmStream
-                : filmStream.filter(film -> film.getGenres().stream().anyMatch(g -> genreId.equals(g.getId())));
-    }
-
-    private Stream<Film> getStreamFilmsByYear(Stream<Film> filmStream, Integer year) {
-        return year == null ? filmStream : filmStream.filter(film -> year.equals(film.getReleaseDate().getYear()));
-    }
-
-    public List<Film> getCommonFilms(String userId, String friendId) {
+    public List<Film> getCommonFilms(long userId, long friendId) {
         return filmDao.getCommonFilms(userId, friendId);
     }
 
     public void deleteFilmById(Long filmId) {
-        filmDao.findFilmById(filmId);
         filmDao.deleteFilmById(filmId);
     }
 
