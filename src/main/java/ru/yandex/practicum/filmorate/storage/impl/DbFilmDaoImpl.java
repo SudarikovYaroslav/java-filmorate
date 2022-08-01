@@ -115,44 +115,39 @@ public class DbFilmDaoImpl implements FilmDao {
         switch (splitedRequest.length) {
             case (1):
                 if (splitedRequest[0].equals("title")) {
-                    return getFilmsByPartOfTitle(query).stream()
-                            .sorted()
-                            .collect(Collectors.toList());
+                    return getFilmsByPartOfTitle(query);
                 }
-                return getFilmsByPartOfDirectorName(query).stream()
-                        .sorted()
-                        .collect(Collectors.toList());
+                return getFilmsByPartOfDirectorName(query);
             case (2):
-                List<Film> filmsWithSearchedNames = getFilmsByPartOfTitleAndDirectorName(query);
-                return filmsWithSearchedNames.stream()
-                        .sorted()
-                        .collect(Collectors.toList());
+                return getFilmsByPartOfTitleAndDirectorName(query);
         }
         return new ArrayList<>();
     }
+
     private List<Film> getFilmsByPartOfTitle(String filmNamePart) {
         String sqlForFilmsWithSearchedNames = "SELECT * FROM FILMS WHERE LCASE(FILM_NAME) " +
-                "LIKE '%" + filmNamePart.toLowerCase() + "%'";
+                "LIKE '%" + filmNamePart.toLowerCase() + "%' ORDER BY RATE DESC;";
         return jdbcTemplate.query(sqlForFilmsWithSearchedNames, this::makeFilm);
-
     }
 
     private List<Film> getFilmsByPartOfDirectorName(String directorNamePart) {
         String sqlForFilmsWithSearchedDirectors = "SELECT * FROM FILMS WHERE FILM_ID IN " +
                 "(SELECT FILM_ID FROM FILM_DIRECTORS " +
                 "where DIRECTOR_ID IN (SELECT DIRECTORS.DIRECTOR_ID FROM DIRECTORS " +
-                "where LCASE(DIRECTOR_NAME) like '%" + directorNamePart.toLowerCase() + "%'))";
+                "where LCASE(DIRECTOR_NAME) like '%" + directorNamePart.toLowerCase() + "%')) ORDER BY RATE DESC;";
         return jdbcTemplate.query(sqlForFilmsWithSearchedDirectors, this::makeFilm);
     }
+
     private List<Film> getFilmsByPartOfTitleAndDirectorName(String query) {
         String sql = "SELECT * FROM FILMS WHERE LCASE(FILM_NAME) " +
                 "LIKE '%" + query.toLowerCase() + "%' and FILM_ID IN " +
-               "(SELECT FILM_ID FROM FILM_DIRECTORS " +
+                "(SELECT FILM_ID FROM FILM_DIRECTORS " +
                 "where DIRECTOR_ID IN (SELECT DIRECTORS.DIRECTOR_ID FROM DIRECTORS " +
-                "where LCASE(DIRECTOR_NAME) like '%" + query.toLowerCase() + "%'))";
+                "where LCASE(DIRECTOR_NAME) like '%" + query.toLowerCase() + "%')) ORDER BY RATE DESC;";
         return jdbcTemplate.query(sql, this::makeFilm);
 
     }
+
     @Override
     public List<Film> getCommonFilms(long userId, long friendId) {
         List<Film> firstUserFilms = findAllFavoriteMovies(userId);

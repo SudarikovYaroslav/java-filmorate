@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.storage.dao.MarkDao;
 
 @Repository
 public class MarkDaoImpl implements MarkDao {
-
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -20,9 +19,9 @@ public class MarkDaoImpl implements MarkDao {
         String sqlQuery = "insert into MARKS (film_id, user_id, mark) " +
                 "values (?, ?, ?)";
         jdbcTemplate.update(sqlQuery, filmId, userId, mark);
-        String sqlQueryFilms = "update FILMS set RATE = ? where film_id = ?";
+        String sqlQueryFilms = "update FILMS set RATE = (select AVG(CAST(mark as real)) from (select * from MARKS where film_id = ?)) where film_id = ?";
         jdbcTemplate.update(sqlQueryFilms,
-                findRateFilm(filmId),
+                filmId,
                 filmId);
     }
 
@@ -30,15 +29,9 @@ public class MarkDaoImpl implements MarkDao {
     public void deleteMark(long filmId, long userId) {
         String sqlQuery = "delete FROM MARKS where film_id = ? and user_id = ?";
         jdbcTemplate.update(sqlQuery, filmId, userId);
-        String sqlQueryFilms = "update FILMS set RATE = ? where film_id = ?";
+        String sqlQueryFilms = "update FILMS set RATE = (select AVG(CAST(mark as real)) from (select * from MARKS where film_id = ?)) where film_id = ?";
         jdbcTemplate.update(sqlQueryFilms,
-                findRateFilm(filmId),
+               filmId,
                 filmId);
     }
-
-    private Double findRateFilm(long filmId) {
-        String sqlQuery = "select AVG(CAST(mark as real)) from (select * from MARKS where film_id = ?)";
-        return jdbcTemplate.queryForObject(sqlQuery, Double.class, filmId);
-    }
-
 }
