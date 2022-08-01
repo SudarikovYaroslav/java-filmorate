@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Objects;
 
@@ -15,6 +18,14 @@ public class Feed {
     private String eventType;
     private String operation;
     private long entityId;
+
+    public Feed( long timestamp, long userId, String eventType, String operation, long entityId) {
+        this.timestamp = timestamp;
+        this.userId = userId;
+        this.eventType = eventType;
+        this.operation = operation;
+        this.entityId = entityId;
+    }
 
     @Override
     public boolean equals(Object o) {

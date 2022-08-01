@@ -1,15 +1,19 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.sorts.SortingType;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
+@Validated
 @RequestMapping("/films")
 public class FilmController {
     public static final String TOP_FILMS_COUNT = "10";
@@ -48,12 +52,13 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable long id, @PathVariable long userId) {
-        filmService.addLike(id, userId);
+    public void addMark(@PathVariable long id, @PathVariable long userId,
+                        @RequestParam(defaultValue = "10") @Min(1) @Max(10) int mark) {
+        filmService.addMark(id, userId, mark);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
+    public void deleteMark(@PathVariable long id, @PathVariable long userId) {
         filmService.deleteLike(id, userId);
     }
 
@@ -75,7 +80,8 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public List<Film> getCommonFilms(HttpServletRequest request) {
-        return filmService.getCommonFilms(request.getParameter("userId"), request.getParameter("friendId"));
+    public List<Film> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
+
 }

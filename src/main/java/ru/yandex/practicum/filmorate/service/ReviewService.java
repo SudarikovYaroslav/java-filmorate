@@ -5,13 +5,11 @@ import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.dao.*;
-import ru.yandex.practicum.filmorate.storage.impl.DbFeedDaoImpl;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,15 +52,12 @@ public class ReviewService {
     }
 
     public Review save(Review review) {
-        if (review.getUserId() == null || review.getFilmId() == null) {
-            throw new IllegalStateException("Не заполнены поля filmId или userId");
-        }
 
         if ((userDao.findUserById(review.getUserId()).isPresent())
                 && (filmDao.findFilmById(review.getFilmId()).isPresent())) {
             Review newReview = reviewDao.save(review);
             newReview.setUseful(0);
-            feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+            feedDao.saveFeed(new Feed(Instant.now().toEpochMilli(),
                     review.getUserId(), "REVIEW", "ADD", review.getReviewId()));
             return newReview;
         }
@@ -77,7 +72,7 @@ public class ReviewService {
         }
         Review newReview = reviewDao.update(review);
         newReview.setUseful(rateReviews(review.getReviewId()));
-        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        feedDao.saveFeed(new Feed(Instant.now().toEpochMilli(),
                 newReview.getUserId(), "REVIEW", "UPDATE", newReview.getReviewId()));
         return newReview;
     }
@@ -92,10 +87,14 @@ public class ReviewService {
     }
 
     public boolean delete(long id) {
-        Optional<Review> review = reviewDao.findReviewById(id);
-        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
-                review.get().getUserId(), "REVIEW", "REMOVE", review.get().getReviewId()));
-        return reviewDao.delete(id);
+        Review review = reviewDao.findReviewById(id).orElse(null);
+        if (review != null) {
+            feedDao.saveFeed(new Feed(Instant.now().toEpochMilli(),
+                    review.getUserId(), "REVIEW", "REMOVE", review.getReviewId()));
+            return reviewDao.delete(id);
+        } else {
+            return false;
+        }
     }
 
     public void addLike(long reviewId, long userId) {

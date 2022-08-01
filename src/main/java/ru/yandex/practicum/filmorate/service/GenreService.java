@@ -10,12 +10,10 @@ import java.util.List;
 @Service
 public class GenreService {
     private final GenreDao genreDao;
-    private final ValidationService validationService;
 
     @Autowired
-    public GenreService(GenreDao genreDao, ValidationService validationService) {
+    public GenreService(GenreDao genreDao) {
         this.genreDao = genreDao;
-        this.validationService = validationService;
     }
 
     public List<Genre> findAllGenres() {
@@ -23,7 +21,6 @@ public class GenreService {
     }
 
     public Genre findGenreById(long id) {
-        validationService.validateId(id);
         return genreDao.findGenreById(id);
     }
 }

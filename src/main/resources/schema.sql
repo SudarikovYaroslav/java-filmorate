@@ -23,6 +23,7 @@ create table if not exists FILMS
     description   varchar(200),
     release_date  timestamp,
     duration      int,
+    rate real,
     mpa_rating_id int references MPA_RATINGS (mpa_rating_id)
 );
 
@@ -50,10 +51,11 @@ create table if not exists USER_FRIENDS
     PRIMARY KEY (user_id, friend_id)
 );
 
-create table if not exists LIKES
+create table if not exists MARKS
 (
     film_id int references FILMS (film_id) on delete cascade,
     user_id int references USERS (user_id) on delete cascade,
+    mark int not null,
     primary key (film_id, user_id)
 );
 

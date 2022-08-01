@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exceptions.IllegalIdException;
+import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.dao.DirectorDao;
 
@@ -36,11 +38,13 @@ public class DirectorDaoImpl implements DirectorDao {
     }
 
     @Override
-    public Optional<Director> findDirectorById(long directorId) {
+    public Director findDirectorById(long directorId) {
         String sqlQuery = "select * from DIRECTORS where director_id = ?";
         List<Director> directors = jdbcTemplate.query(sqlQuery, this::makeDirector, directorId);
-        if (directors.isEmpty()) return Optional.empty();
-        return Optional.of(directors.get(0));
+        if (directors.size() != 1) {
+            throw new StorageException("Режиссера с таким id нет в базе данных");
+        }
+        return directors.get(0);
     }
 
     @Override

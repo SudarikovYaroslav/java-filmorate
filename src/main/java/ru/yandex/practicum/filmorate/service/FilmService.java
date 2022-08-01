@@ -1,40 +1,37 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.sorts.SortingType;
-import ru.yandex.practicum.filmorate.storage.dao.FeedDao;
-import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
-import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
-import ru.yandex.practicum.filmorate.storage.impl.DbFeedDaoImpl;
+import ru.yandex.practicum.filmorate.storage.dao.*;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class FilmService {
 
     private final FilmDao filmDao;
-    private final LikeDao likeDao;
+    private final MarkDao markDao;
     private final FeedDao feedDao;
-    private final DirectorService directorService;
+    private final DirectorDao directorDao;
+    private final UserDao userDao;
     private final ValidationService validationService;
 
     @Autowired
-    public FilmService(@Qualifier("dbFilmDaoImpl") FilmDao filmDao,
-                       LikeDao likeDao,
-                       DirectorService directorService,
+    public FilmService(FilmDao filmDao,
+                       MarkDao markDao,
                        FeedDao feedDao,
-                       ValidationService validationService) {
+                       DirectorDao directorDao,
+                       UserDao userDao, ValidationService validationService) {
         this.filmDao = filmDao;
-        this.likeDao = likeDao;
-        this.directorService = directorService;
+        this.markDao = markDao;
+        this.directorDao = directorDao;
         this.feedDao = feedDao;
+        this.userDao = userDao;
         this.validationService = validationService;
     }
 
@@ -53,62 +50,51 @@ public class FilmService {
     }
 
     public Film getFilmById(long id) {
-        validationService.validateFilmId(id);
         return filmDao.findFilmById(id).orElse(null);
     }
 
     public List<Film> searchFilms(String query, String directorAndTitle) {
-        List<Film> result = filmDao.searchFilms(query, directorAndTitle);
-        result.sort((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())));
-        return result;
+        return filmDao.searchFilms(query, directorAndTitle);
     }
 
-    public void addLike(long filmId, long userId) {
-        validationService.validateFilmId(filmId);
-        validationService.validateUserId(userId);
-        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+    public void addMark(long filmId, long userId, int mark) {
+        filmDao.findFilmById(filmId);
+        userDao.findUserById(userId);
+        feedDao.saveFeed(new Feed(Instant.now().toEpochMilli(),
                 userId, "LIKE", "ADD", filmId));
-        likeDao.addLike(filmId, userId);
+        markDao.addMark(filmId, userId, mark);
     }
 
     public void deleteLike(long filmId, long userId) {
-        validationService.validateFilmId(filmId);
-        validationService.validateUserId(userId);
-        feedDao.saveFeed(new Feed(1, Instant.now().toEpochMilli(),
+        filmDao.findFilmById(filmId);
+        userDao.findUserById(userId);
+        feedDao.saveFeed(new Feed(Instant.now().toEpochMilli(),
                 userId, "LIKE", "REMOVE", filmId));
-        likeDao.deleteLike(filmId, userId);
+        markDao.deleteMark(filmId, userId);
     }
 
     public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
-        return getStreamFilmsByGenreId(getStreamFilmsByYear(filmDao.findAll().stream(), year), genreId)
-                .sorted((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())))
-                .limit(count)
-                .collect(Collectors.toList());
+        if (genreId == null && year == null) {
+            return filmDao.findAll().stream().limit(count).collect(Collectors.toList());
+        } else if (genreId == null) {
+            return filmDao.findFilmByYear(year).stream().limit(count).collect(Collectors.toList());
+        } else if (year == null) {
+            return filmDao.findFilmByGenre(genreId).stream().limit(count).collect(Collectors.toList());
+        } else {
+            return filmDao.findFilmByGenreAndYear(genreId, year).stream().limit(count).collect(Collectors.toList());
+        }
     }
-
-    private Stream<Film> getStreamFilmsByGenreId(Stream<Film> filmStream, Long genreId) {
-        return genreId == null ? filmStream
-                : filmStream.filter(film -> film.getGenres().stream().anyMatch(g -> genreId.equals(g.getId())));
-    }
-
-    private Stream<Film> getStreamFilmsByYear(Stream<Film> filmStream, Integer year) {
-        return year == null ? filmStream : filmStream.filter(film -> year.equals(film.getReleaseDate().getYear()));
-    }
-
-    public List<Film> getCommonFilms(String userId, String friendId) {
-        List<Film> result = filmDao.getCommonFilms(userId, friendId);
-        result.sort((f1, f2) -> (likeDao.likesNumber(f2.getId()) - likeDao.likesNumber(f1.getId())));
-        return result;
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return filmDao.getCommonFilms(userId, friendId);
     }
 
     public void deleteFilmById(Long filmId) {
-        validationService.validateFilmId(filmId);
         filmDao.deleteFilmById(filmId);
     }
 
     public List<Film> getDirectorFilms(long directorId, SortingType sortBy) {
-        validationService.validateDirectorId(directorId);
-        directorService.checkIfDirectorExists(directorId);
+        directorDao.findDirectorById(directorId);
         return filmDao.getDirectorFilms(directorId, sortBy);
     }
+
 }
