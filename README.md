@@ -5,11 +5,14 @@
 ***Сервис по поиску топ фильмов для просмотра.***
 
 ---
+*Веб сервис написана на Java 11, на основе Spring Boot. Реализует REST API. В работе использованы Lombok, 
+JUnit тестирование.*
+
+**Клиент-серверное приложение позволяет работать с фильмами, давать им оценки и получать топ фильмов по году,
+жанру, осуществлять поиск по режиссёру.**
 
 ### ER-диаграмма:
 ![](ER-diagram.png)
-https://app.quickdatabasediagrams.com/#/d/ozfp4o
-  
 
 #### Примеры SQL запросов:
 - Получить список названий всех фильмов  
@@ -41,3 +44,9 @@ https://app.quickdatabasediagrams.com/#/d/ozfp4o
   from USER_FRIENDS
   where user_id = 2 
         friendship_status_id = 2;  
+  
+***Запустить сервис можно в IntelliJ IDEA:***
+- в начале необходимо инициализировать БД выполнив
+  java-filmorate/src/main/java/ru/yandex/practicum/filmorate/resources/schema.sql -> "run"
+- затем запустите приложение
+  java-filmorate/src/main/java/ru/yandex/practicum/filmorate/FilmorateApplication -> "run"
